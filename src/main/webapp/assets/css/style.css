@@ -315,12 +315,7 @@ a {
     background: #e74c3c !important; /* Red for Admin */
 }
 
-/* Add a hover effect for stat cards */
-.stat-card:hover {
-    transform: translateY(-5px);
-    transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+/o
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -563,4 +558,17 @@ a {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
     }
+}
+/* Replace with your actual selectors if different */
+.metric-card,
+.metric-card .icon {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Ensure no transform on hover as well */
+.metric-card:hover,
+.metric-card:focus,
+.metric-card:active {
+  transform: none !important;
 }
