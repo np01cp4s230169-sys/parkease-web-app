@@ -18,6 +18,7 @@
 <body class="dashboard-body">
 
     <div class="dashboard-container">
+        <!-- Sidebar Navigation Element Area -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>ParkEase</h2>
@@ -31,12 +32,14 @@
             </nav>
         </aside>
 
+        <!-- Main Workspace Workspace Section Area -->
         <main class="main-content">
             <header class="content-header">
                 <h1>Welcome, <%= user.getName() %>!</h1>
                 <div class="user-badge"><%= user.getRole() %></div>
             </header>
 
+            <!-- Grid container leverages structural CSS percentages for fluid cards -->
             <section class="stats-grid">
                 <div class="stat-card">
                     <h3>Active Bookings</h3>
@@ -44,19 +47,21 @@
                 </div>
                 <div class="stat-card">
                     <h3>Available Slots</h3>
-                    <p class="stat-number">24</p>
+                    <p class="stat-number">20</p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Spent</h3>
-                    <p class="stat-number">$0.00</p>
+                    <p class="stat-number">RS0.00</p>
                 </div>
             </section>
 
+            <!-- Quick Action Layout Handles Multi-Device Window Breakpoints Fluently -->
             <section class="quick-actions">
                 <h2>Quick Actions</h2>
                 <div class="action-buttons">
-                    <a href="${pageContext.request.contextPath}/SlotServlet?action=search" class="btn-primary">Find Parking</a>
-                    <a href="${pageContext.request.contextPath}/UserServlet?action=profile" class="btn-secondary">Add Vehicle</a>
+                    <!-- Wrapped classes within explicit button-level properties to match media guidelines -->
+                    <a href="${pageContext.request.contextPath}/SlotServlet?action=search" class="btn-primary" style="text-align: center;">Find Parking</a>
+                    <a href="${pageContext.request.contextPath}/UserServlet?action=profile" class="btn-secondary" style="text-align: center;">Add Vehicle</a>
                 </div>
             </section>
         </main>
