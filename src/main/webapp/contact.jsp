@@ -10,11 +10,13 @@
 <body class="auth-page">
 
     <div class="auth-container">
-        <div class="auth-card" style="max-width: 600px;">
+        <!-- Using auth-card-wide for wider form layout -->
+        <div class="auth-card-wide">
             <h1>Contact Support</h1>
             <p>Having trouble? Our team is here to help 24/7.</p>
 
-            <div class="contact-info-block">
+            <!-- CONTACT INFO BLOCK -->
+            <div class="contact-info">
                 <p><strong>Email:</strong> support@parkease.com</p>
                 <p><strong>Phone:</strong> +1 (800) PARK-EASE</p>
                 <p><strong>Office:</strong> 123 Tech Park Avenue, Silicon Valley</p>
@@ -22,13 +24,13 @@
 
             <!-- DYNAMIC STATUS NOTIFICATION AREA -->
             <% if (request.getAttribute("successMessage") != null) { %>
-                <div style="background-color: #d4edda; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 4px; text-align: left; font-size: 0.95rem; border: 1px solid #c3e6cb;">
+                <div class="alert-success">
                     <%= request.getAttribute("successMessage") %>
                 </div>
             <% } %>
 
             <% if (request.getAttribute("errorMessage") != null) { %>
-                <div style="background-color: #f8d7da; color: #721c24; padding: 12px; margin-bottom: 20px; border-radius: 4px; text-align: left; font-size: 0.95rem; border: 1px solid #f5c6cb;">
+                <div class="alert-danger">
                     <%= request.getAttribute("errorMessage") %>
                 </div>
             <% } %>

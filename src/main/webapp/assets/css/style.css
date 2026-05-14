@@ -614,3 +614,64 @@ a {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+/* =========================================
+   CONTACT PAGE SPECIFIC STYLES
+   ========================================= */
+.auth-container {
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2%;
+}
+
+.contact-info {
+    background-color: #f8f9fa;
+    padding: 1.2rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    border: 1px solid #e9ecef;
+}
+
+.contact-info p {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.contact-info p:last-child {
+    margin-bottom: 0;
+}
+
+.contact-info strong {
+    color: #2c3e50;
+    min-width: 80px;
+    display: inline-block;
+}
+
+/* Responsive adjustments for contact page */
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 5%;
+    }
+    
+    .contact-info {
+        padding: 1rem;
+    }
+    
+    .contact-info strong {
+        min-width: unset;
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 3%;
+    }
+}
