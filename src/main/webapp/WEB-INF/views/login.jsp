@@ -9,39 +9,42 @@
 </head>
 <body class="auth-page">
 
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1>ParkEase</h1>
-            <p>Welcome back! Please login to your account.</p>
+    <div class="auth-card">
+        <h1>ParkEase</h1>
+        <p>Welcome back! Please login to your account.</p>
 
-           <% if(request.getAttribute("error") != null) { %>
-    <div class="alert alert-danger">
-        <%= request.getAttribute("error") %>
-    </div>
-<% } %>
-
-<% if(request.getAttribute("success") != null) { %>
-    <div class="alert alert-success">
-        <%= request.getAttribute("success") %>
-    </div>
-<% } %>
-            <form action="${pageContext.request.contextPath}/LoginServlet" method="POST">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
-                </div>
-
-                <button type="submit" class="btn-primary">Login</button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="${pageContext.request.contextPath}/UserServlet?action=register">Register here</a></p>
+        <!-- ERROR ALERT -->
+        <% if(request.getAttribute("error") != null) { %>
+            <div class="alert-danger">
+                <%= request.getAttribute("error") %>
             </div>
+        <% } %>
+
+        <!-- SUCCESS ALERT -->
+        <% if(request.getAttribute("success") != null) { %>
+            <div class="alert-success">
+                <%= request.getAttribute("success") %>
+            </div>
+        <% } %>
+
+        <!-- LOGIN FORM -->
+        <form action="${pageContext.request.contextPath}/LoginServlet" method="POST" class="profile-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-input" required placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-input" required placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+
+        <!-- REGISTER LINK -->
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="${pageContext.request.contextPath}/UserServlet?action=register">Register here</a></p>
         </div>
     </div>
 

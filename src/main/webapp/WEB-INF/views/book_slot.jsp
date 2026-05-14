@@ -24,7 +24,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body class="dashboard-body">
-
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-header"><h2>ParkEase</h2></div>
@@ -42,39 +41,43 @@
                 <h1>Secure Your Spot</h1>
             </header>
 
+            <!-- ERROR MESSAGES -->
             <% if ("booking_failed".equals(error)) { %>
-                <p style="color:red; font-weight:bold;">Booking failed. Please try again.</p>
+                <div class="alert-danger">Booking failed. Please try again.</div>
             <% } else if ("invalid_selection".equals(error)) { %>
-                <p style="color:red; font-weight:bold;">Please select valid booking details.</p>
+                <div class="alert-danger">Please select valid booking details.</div>
             <% } else if ("select_zone_first".equals(error)) { %>
-                <p style="color:red; font-weight:bold;">Please select a zone first.</p>
+                <div class="alert-danger">Please select a zone first.</div>
             <% } %>
 
+            <!-- SUCCESS MESSAGE -->
             <% if ("booking_success".equals(msg)) { %>
-                <p style="color:green; font-weight:bold;">Slot booked successfully.</p>
+                <div class="alert-success">Slot booked successfully.</div>
             <% } %>
 
-            <section class="auth-card" style="max-width: 600px; text-align: left; margin: 0 auto;">
-                <form action="${pageContext.request.contextPath}/BookingServlet?action=confirmBooking" method="POST">
-
+            <!-- BOOKING FORM -->
+            <section class="stat-card">
+                <form action="${pageContext.request.contextPath}/BookingServlet?action=confirmBooking" method="POST" class="profile-form">
+                    
                     <div class="form-group">
                         <label>Choose Your Vehicle</label>
-                        <select name="vehicleId" required class="form-input">
+                        <select name="vehicleId" class="form-input" required>
                             <option value="">-- Select Registered Vehicle --</option>
                             <% if (vehicles != null) {
                                 for (Vehicle v : vehicles) { %>
                                     <option value="<%= v.getVehicleId() %>">
-                                        <%= v.getRegistrationNumber() %> (<%= v.getMake() %>)
+                                        <%= v.getRegistrationNumber() %> (<%= v.getMake() %> <%= v.getModel() %>)
                                     </option>
                             <%  }
-                            } %>
+                            } else { %>
+                                <option disabled>No vehicles registered</option>
+                            <% } %>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label>Select Parking Zone</label>
-                        <select name="zoneId" required class="form-input"
-                                onchange="window.location.href='${pageContext.request.contextPath}/SlotServlet?action=view&zoneId=' + this.value">
+                        <select name="zoneId" class="form-input" required>
                             <option value="">-- Choose Area --</option>
                             <% if (zones != null) {
                                 for (Zone z : zones) { %>
@@ -89,23 +92,24 @@
 
                     <div class="form-group">
                         <label>Available Slots</label>
-                        <select name="slotId" required class="form-input">
+                        <select name="slotId" class="form-input" required>
                             <option value="">-- Pick a Spot --</option>
                             <% if (slots != null) {
                                 for (ParkingSlot s : slots) { %>
                                     <option value="<%= s.getSlotId() %>">
-                                        <%= s.getSlotNumber() %> - $<%= s.getHourlyRate() %>/hr
+                                        <%= s.getSlotNumber() %> - ₹<%= s.getHourlyRate() %>/hr
                                     </option>
                             <%  }
-                            } %>
+                            } else { %>
+                                <option disabled>Select zone first</option>
+                            <% } %>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-primary" style="margin-top: 1rem;">Confirm Booking</button>
+                    <button type="submit" class="btn-primary">Confirm Booking</button>
                 </form>
             </section>
         </main>
     </div>
-
 </body>
 </html>
