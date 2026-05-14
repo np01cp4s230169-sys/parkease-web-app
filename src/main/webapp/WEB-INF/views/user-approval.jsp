@@ -20,41 +20,43 @@
 </head>
 <body class="auth-page">
 
-    <div class="auth-container">
-        <div class="auth-card" style="max-width: 900px; width: 100%;">
-            <h1>User Registration Control</h1>
-            <p>Review and authorize pending driver registry tokens down to storage tables.</p>
+    <!-- Framework-free flexcard container layout mapped directly to style.css -->
+    <div class="auth-card-wide">
+        <h1>User Registration Control</h1>
+        <p>Review and authorize pending driver registry tokens down to storage tables.</p>
 
-            <!-- NATIVE NOTIFICATION BLOCKS MATCHING YOUR LOGIN PATTERN -->
-            <% if (request.getAttribute("error") != null) { %>
-                <div class="alert alert-danger">
-                    <%= request.getAttribute("error") %>
-                </div>
-            <% } %>
+        <!-- Dynamic notification blocks -->
+        <% if (request.getAttribute("error") != null) { %>
+            <div class="alert alert-danger">
+                <%= request.getAttribute("error") %>
+            </div>
+        <% } %>
 
-            <% if (request.getAttribute("success") != null) { %>
-                <div class="alert alert-success">
-                    <%= request.getAttribute("success") %>
-                </div>
-            <% } %>
+        <% if (request.getAttribute("success") != null) { %>
+            <div class="alert alert-success">
+                <%= request.getAttribute("success") %>
+            </div>
+        <% } %>
 
-            <% if (request.getParameter("msg") != null) { %>
-                <div class="alert alert-success">
-                    Action Completed! Status updated successfully.
-                </div>
-            <% } %>
+        <% if (request.getParameter("msg") != null) { %>
+            <div class="alert alert-success">
+                Action Completed! Status updated successfully.
+            </div>
+        <% } %>
 
-            <div style="margin-top: 25px; text-align: left;">
-                <% 
-                    List<User> pendingUsers = (List<User>) request.getAttribute("pendingUsers");
-                    if (pendingUsers == null || pendingUsers.isEmpty()) { 
-                %>
-                    <p style="text-align: center; color: #718096; font-style: italic; padding: 20px 0;">
-                        No new user registrations are awaiting approval at this time.
-                    </p>
-                <% } else { %>
-                    <!-- TABLE CONTAINER MATCHING SYSTEM INFRASTRUCTURE GRID -->
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <div class="form-group">
+            <% 
+                List<User> pendingUsers = (List<User>) request.getAttribute("pendingUsers");
+                if (pendingUsers == null || pendingUsers.isEmpty()) { 
+            %>
+                <p style="text-align: center; color: #718096; font-style: italic; padding: 20px 0;">
+                    No new user registrations are awaiting approval at this time.
+                </p>
+            <% } else { %>
+                
+                <!-- Scroll container prevents layout breaking on smaller viewports -->
+                <div class="table-scroll-container">
+                    <table class="responsive-data-table">
                         <thead>
                             <tr style="border-bottom: 2px solid #ddd; text-align: left;">
                                 <th style="padding: 12px 8px;">Name</th>
@@ -70,9 +72,10 @@
                                     <td style="padding: 12px 8px;"><%= pendingUser.getEmail() %></td>
                                     <td style="padding: 12px 8px;"><%= pendingUser.getPhone() != null ? pendingUser.getPhone() : "-" %></td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                                        
+                                        <!-- Flexbox layout handles form alignments and multi-device stacking -->
+                                        <div class="table-btn-flexbox">
                                             
-                                            <!-- FORM ACTION POINTING TO SYSTEM CONTROLLER SERVLET -->
                                             <form action="${pageContext.request.contextPath}/admin/manage-users" method="POST" style="margin: 0;">
                                                 <input type="hidden" name="userId" value="<%= pendingUser.getUserId() %>">
                                                 <input type="hidden" name="action" value="approve">
@@ -91,12 +94,12 @@
                             <% } %>
                         </tbody>
                     </table>
-                <% } %>
-            </div>
+                </div>
+            <% } %>
+        </div>
 
-            <div class="auth-footer" style="margin-top: 30px; text-align: center;">
-                <p><a href="${pageContext.request.contextPath}/AdminServlet?action=dashboard" style="text-decoration: none; font-weight: 600;">Return to Core Admin Dashboard</a></p>
-            </div>
+        <div class="auth-footer">
+            <p><a href="${pageContext.request.contextPath}/AdminServlet?action=dashboard" style="text-decoration: none; font-weight: 600;">Return to Core Admin Dashboard</a></p>
         </div>
     </div>
 
