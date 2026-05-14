@@ -26,7 +26,8 @@ a {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 .auth-card {
@@ -39,12 +40,24 @@ a {
     text-align: center;
 }
 
-.auth-card h1 {
+/* Custom class extension for wide-format dashboard control views */
+.auth-card-wide {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.auth-card h1, .auth-card-wide h1 {
     margin-bottom: 0.5rem;
     color: #2c3e50;
 }
 
-.auth-card p {
+.auth-card p, .auth-card-wide p {
     margin-bottom: 1.5rem;
     color: #666;
     font-size: 0.9rem;
@@ -148,7 +161,7 @@ a {
 }
 
 /* =========================================
-   4. COMPONENTS (Buttons, Alerts)
+   4. COMPONENTS (Buttons, Alerts, Tables)
    ========================================= */
 .btn-primary {
     width: 100%;
@@ -208,6 +221,7 @@ a {
     color: #7f8c8d;
     font-size: 0.9rem;
 }
+
 /* Dashboard Layout */
 .dashboard-body {
     background-color: #f0f2f5;
@@ -306,6 +320,7 @@ a {
     gap: 15px;
     margin-top: 1rem;
 }
+
 /* Admin specific colors */
 .admin-sidebar {
     background: #1a252f; /* Slightly darker */
@@ -314,7 +329,6 @@ a {
 .admin-tag {
     background: #e74c3c !important; /* Red for Admin */
 }
-
 
 .section-header {
     display: flex;
@@ -340,6 +354,7 @@ a {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 .profile-grid {
     display: flex;
     gap: 2rem;
@@ -359,6 +374,7 @@ a {
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+
 .form-input {
     width: 100%;
     padding: 0.8rem;
@@ -366,6 +382,7 @@ a {
     border-radius: 4px;
     background: white;
 }
+
 .form-group textarea {
     width: 100%;
     padding: 10px;
@@ -375,6 +392,29 @@ a {
     resize: vertical;
     box-sizing: border-box;
 }
+
+/* Framework-Free Responsive Table Components */
+.table-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 15px;
+}
+
+.responsive-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.table-btn-flexbox {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 /* =========================================
    5. RESPONSIVE DESIGN - MEDIA QUERIES
    ========================================= */
@@ -454,7 +494,7 @@ a {
         text-align: center;
     }
 
-    .auth-card {
+    .auth-card, .auth-card-wide {
         margin: 1rem;
         padding: 1.5rem;
     }
@@ -496,6 +536,21 @@ a {
         text-align: center;
         background: rgba(255,255,255,0.1);
         border-radius: 4px;
+    }
+
+    /* Stack buttons vertically inside table arrays on narrow viewports */
+    .table-btn-flexbox {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .table-btn-flexbox form {
+        width: 100%;
+    }
+
+    .table-btn-flexbox .btn-primary {
+        width: 100% !important;
+        text-align: center;
     }
 }
 
