@@ -315,7 +315,7 @@ a {
     background: #e74c3c !important; /* Red for Admin */
 }
 
-/o
+
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -572,3 +572,21 @@ a {
 .metric-card:active {
   transform: none !important;
 }
+/* Stop movement on the metric cards and all their children */
+.stat-card,
+.stat-card * {
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  will-change: auto !important;
+}
+
+/* Optional: explicitly disable hover transform if any hover rule exists elsewhere */
+.stat-card:hover,
+.stat-card:focus,
+.stat-card:active {
+  transform: none !important;
+}
+
+/* If you use a tilt/parallax library (e.g., data-tilt), disable it */
+[data-tilt] { transform: none !important; }
