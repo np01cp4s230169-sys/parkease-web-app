@@ -89,10 +89,10 @@
                         <strong>Email:</strong> support@parkease.com
                     </p>
                     <p style="font-size: 0.95rem; margin: 0 0 12px 0; line-height: 1.5;">
-                        <strong>Phone:</strong> +1 (800) PARK-EASE
+                        <strong>Phone:</strong> +977 9824135234 PARK-EASE
                     </p>
                     <p style="font-size: 0.95rem; margin: 0; line-height: 1.6; text-align: justify;">
-                        <strong>Add:</strong> Building 1, Jihai Science and Technology Park, No. 116, Qiaojin South Road, Xiqiao Town, Nanhai District, Foshan City, Guangdong Province, China
+                        <strong>Add:</strong> Building 1, Kamal Pokhari Park, No. 420, Messed Road, Kathmandu Town, Bagmati Province, Nepal
                     </p>
                 </div>
 
