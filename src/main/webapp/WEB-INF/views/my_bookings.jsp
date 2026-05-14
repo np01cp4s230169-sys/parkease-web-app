@@ -16,6 +16,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParkEase | My Bookings</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
@@ -37,93 +38,106 @@
                 <h1>My Parking Records</h1>
             </header>
 
+            <!-- SUCCESS MESSAGES -->
             <% if ("checked_out".equals(msg)) { %>
-                <p style="color: green; font-weight: bold;">
-                    Session ended successfully. Total charge: <%= request.getParameter("charge") %>
-                </p>
+                <div class="alert-success">
+                    Session ended successfully. Total charge: ₹<%= request.getParameter("charge") %>
+                </div>
             <% } %>
 
+            <!-- ERROR MESSAGES -->
             <% if ("checkout_failed".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Failed to complete checkout.</p>
+                <div class="alert-danger">Failed to complete checkout.</div>
             <% } else if ("invalid_session".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Invalid session details.</p>
+                <div class="alert-danger">Invalid session details.</div>
             <% } %>
 
-            <section class="stat-card" style="margin-bottom: 2rem;">
+            <!-- TOTAL BOOKINGS CARD -->
+            <section class="stat-card">
                 <h3>Total Bookings</h3>
-                <p style="font-size: 2rem; font-weight: bold;"><%= totalBookings %></p>
+                <p class="stat-number"><%= totalBookings %></p>
             </section>
 
+            <!-- ACTIVE SESSIONS TABLE -->
             <section class="management-section">
                 <h2>Current Active Sessions</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Session ID</th>
-                            <th>Slot #</th>
-                            <th>Vehicle ID</th>
-                            <th>Entry Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (activeSessions != null && !activeSessions.isEmpty()) {
-                            for (ParkingSession s : activeSessions) { %>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td><%= s.getSessionId() %></td>
-                                <td><strong><%= s.getSlotId() %></strong></td>
-                                <td><%= s.getVehicleId() %></td>
-                                <td><%= s.getEntryTime() %></td>
-                                <td><span class="status-pill active">PARKED</span></td>
-                                <td>
-                                    <form action="${pageContext.request.contextPath}/BookingServlet?action=endSession" method="POST">
-                                        <input type="hidden" name="sessionId" value="<%= s.getSessionId() %>">
-                                        <input type="hidden" name="slotId" value="<%= s.getSlotId() %>">
-                                        <button type="submit" class="btn-primary" style="background:#e67e22;">End Session & Pay</button>
-                                    </form>
-                                </td>
+                                <th>Session ID</th>
+                                <th>Slot #</th>
+                                <th>Vehicle ID</th>
+                                <th>Entry Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
-                        <% } } else { %>
-                            <tr><td colspan="6">No active parking sessions found.</td></tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% if (activeSessions != null && !activeSessions.isEmpty()) {
+                                for (ParkingSession s : activeSessions) { %>
+                                <tr>
+                                    <td><%= s.getSessionId() %></td>
+                                    <td><strong><%= s.getSlotId() %></strong></td>
+                                    <td><%= s.getVehicleId() %></td>
+                                    <td><%= s.getEntryTime() %></td>
+                                    <td><span class="status-active">PARKED</span></td>
+                                    <td class="table-btn-flexbox">
+                                        <form action="${pageContext.request.contextPath}/BookingServlet?action=endSession" method="POST">
+                                            <input type="hidden" name="sessionId" value="<%= s.getSessionId() %>">
+                                            <input type="hidden" name="slotId" value="<%= s.getSlotId() %>">
+                                            <button type="submit" class="btn-primary">End Session</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% } } else { %>
+                                <tr>
+                                    <td colspan="6" class="no-data">No active parking sessions found.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
-            <section class="management-section" style="margin-top: 2rem;">
+            <!-- COMPLETED SESSIONS TABLE -->
+            <section class="management-section">
                 <h2>Completed Sessions</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Session ID</th>
-                            <th>Slot #</th>
-                            <th>Vehicle ID</th>
-                            <th>Entry Time</th>
-                            <th>Exit Time</th>
-                            <th>Total Hours</th>
-                            <th>Total Charges</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (completedSessions != null && !completedSessions.isEmpty()) {
-                            for (ParkingSession s : completedSessions) { %>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td><%= s.getSessionId() %></td>
-                                <td><%= s.getSlotId() %></td>
-                                <td><%= s.getVehicleId() %></td>
-                                <td><%= s.getEntryTime() %></td>
-                                <td><%= s.getExitTime() %></td>
-                                <td><%= s.getTotalHours() %></td>
-                                <td><%= s.getTotalCharges() %></td>
-                                <td><span class="status-pill"><%= s.getStatus() %></span></td>
+                                <th>Session ID</th>
+                                <th>Slot #</th>
+                                <th>Vehicle ID</th>
+                                <th>Entry Time</th>
+                                <th>Exit Time</th>
+                                <th>Total Hours</th>
+                                <th>Total Charges</th>
+                                <th>Status</th>
                             </tr>
-                        <% } } else { %>
-                            <tr><td colspan="8">No completed sessions found.</td></tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% if (completedSessions != null && !completedSessions.isEmpty()) {
+                                for (ParkingSession s : completedSessions) { %>
+                                <tr>
+                                    <td><%= s.getSessionId() %></td>
+                                    <td><%= s.getSlotId() %></td>
+                                    <td><%= s.getVehicleId() %></td>
+                                    <td><%= s.getEntryTime() %></td>
+                                    <td><%= s.getExitTime() %></td>
+                                    <td><%= s.getTotalHours() %></td>
+                                    <td>₹<%= s.getTotalCharges() %></td>
+                                    <td><span class="status-completed">COMPLETED</span></td>
+                                </tr>
+                            <% } } else { %>
+                                <tr>
+                                    <td colspan="8" class="no-data">No completed sessions found.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>

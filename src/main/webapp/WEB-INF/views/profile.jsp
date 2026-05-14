@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body class="dashboard-body">
-
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-header"><h2>ParkEase</h2></div>
@@ -39,35 +38,37 @@
                 <h1>My Profile</h1>
             </header>
 
+            <!-- SUCCESS ALERTS -->
             <% if ("vehicle_added".equals(msg)) { %>
-                <p style="color: green; font-weight: bold;">Vehicle added successfully.</p>
+                <div class="alert-success">Vehicle added successfully.</div>
             <% } else if ("password_changed".equals(msg)) { %>
-                <p style="color: green; font-weight: bold;">Password changed successfully.</p>
+                <div class="alert-success">Password changed successfully.</div>
             <% } else if ("profile_updated".equals(msg)) { %>
-                <p style="color: green; font-weight: bold;">Profile updated successfully.</p>
+                <div class="alert-success">Profile updated successfully.</div>
             <% } %>
-            
 
+            <!-- ERROR ALERTS -->
             <% if ("failed".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Operation failed. Please try again.</p>
+                <div class="alert-danger">Operation failed. Please try again.</div>
             <% } else if ("empty_password_fields".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">All password fields are required.</p>
+                <div class="alert-danger">All password fields are required.</div>
             <% } else if ("password_mismatch".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">New password and confirm password do not match.</p>
+                <div class="alert-danger">New password and confirm password do not match.</div>
             <% } else if ("invalid_current_password".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Current password is incorrect.</p>
+                <div class="alert-danger">Current password is incorrect.</div>
             <% } else if ("empty_profile_fields".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Name, email, and phone are required.</p>
+                <div class="alert-danger">Name, email, and phone are required.</div>
             <% } else if ("invalid_email".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Invalid email format.</p>
+                <div class="alert-danger">Invalid email format.</div>
             <% } else if ("email_exists".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Email is already used by another account.</p>
+                <div class="alert-danger">Email is already used by another account.</div>
             <% } else if ("phone_exists".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Phone number is already used by another account.</p>
+                <div class="alert-danger">Phone number is already used by another account.</div>
             <% } else if ("profile_update_failed".equals(error)) { %>
-                <p style="color: red; font-weight: bold;">Profile update failed. Please try again.</p>
+                <div class="alert-danger">Profile update failed. Please try again.</div>
             <% } %>
 
+            <!-- PROFILE GRID 1 -->
             <div class="profile-grid">
                 <section class="stat-card">
                     <h3>Account Details</h3>
@@ -82,26 +83,27 @@
                 <section class="stat-card">
                     <h3>Update Profile</h3>
                     <form action="${pageContext.request.contextPath}/UserServlet?action=updateProfile" method="POST" class="profile-form">
-                        <input type="text" name="name" value="<%= user.getName() %>" placeholder="Full Name" required>
-                        <input type="email" name="email" value="<%= user.getEmail() %>" placeholder="Email Address" required>
-                        <input type="text" name="phone" value="<%= user.getPhone() %>" placeholder="Phone Number" required>
+                        <input type="text" name="name" class="form-input" value="<%= user.getName() %>" placeholder="Full Name" required>
+                        <input type="email" name="email" class="form-input" value="<%= user.getEmail() %>" placeholder="Email Address" required>
+                        <input type="tel" name="phone" class="form-input" value="<%= user.getPhone() %>" placeholder="Phone Number" required>
                         <button type="submit" class="btn-primary">Update Profile</button>
                     </form>
                 </section>
             </div>
 
-            <div class="profile-grid" style="margin-top: 2rem;">
+            <!-- PROFILE GRID 2 -->
+            <div class="profile-grid">
                 <section class="stat-card">
                     <h3>Add New Vehicle</h3>
                     <form action="${pageContext.request.contextPath}/UserServlet?action=addVehicle" method="POST" class="profile-form">
-                        <input type="text" name="regNo" placeholder="Registration Number" required>
-                        <select name="type">
+                        <input type="text" name="regNo" class="form-input" placeholder="Registration Number" required>
+                        <select name="type" class="form-input">
                             <option value="CAR">Car</option>
                             <option value="BIKE">Bike</option>
                         </select>
-                        <input type="text" name="make" placeholder="Make (e.g. Toyota)" required>
-                        <input type="text" name="model" placeholder="Model (e.g. Corolla)" required>
-                        <input type="text" name="color" placeholder="Color" required>
+                        <input type="text" name="make" class="form-input" placeholder="Make (e.g. Toyota)" required>
+                        <input type="text" name="model" class="form-input" placeholder="Model (e.g. Corolla)" required>
+                        <input type="text" name="color" class="form-input" placeholder="Color" required>
                         <button type="submit" class="btn-primary">Register Vehicle</button>
                     </form>
                 </section>
@@ -109,39 +111,44 @@
                 <section class="stat-card">
                     <h3>Change Password</h3>
                     <form action="${pageContext.request.contextPath}/UserServlet?action=changePassword" method="POST" class="profile-form">
-                        <input type="password" name="currentPassword" placeholder="Current Password" required>
-                        <input type="password" name="newPassword" placeholder="New Password" required>
-                        <input type="password" name="confirmPassword" placeholder="Confirm New Password" required>
+                        <input type="password" name="currentPassword" class="form-input" placeholder="Current Password" required>
+                        <input type="password" name="newPassword" class="form-input" placeholder="New Password" required>
+                        <input type="password" name="confirmPassword" class="form-input" placeholder="Confirm New Password" required>
                         <button type="submit" class="btn-primary">Update Password</button>
                     </form>
                 </section>
             </div>
 
-            <section class="management-section" style="margin-top: 2rem;">
+            <!-- GARAGE TABLE -->
+            <section class="management-section">
                 <h2>My Garage</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Reg. Number</th>
-                            <th>Type</th>
-                            <th>Brand/Model</th>
-                            <th>Color</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (vehicleList != null && !vehicleList.isEmpty()) {
-                            for (Vehicle v : vehicleList) { %>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td><strong><%= v.getRegistrationNumber() %></strong></td>
-                                <td><%= v.getVehicleType() %></td>
-                                <td><%= v.getMake() %> <%= v.getModel() %></td>
-                                <td><%= v.getColor() %></td>
+                                <th>Reg. Number</th>
+                                <th>Type</th>
+                                <th>Brand/Model</th>
+                                <th>Color</th>
                             </tr>
-                        <% } } else { %>
-                            <tr><td colspan="4">No vehicles registered yet.</td></tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% if (vehicleList != null && !vehicleList.isEmpty()) {
+                                for (Vehicle v : vehicleList) { %>
+                                <tr>
+                                    <td><strong><%= v.getRegistrationNumber() %></strong></td>
+                                    <td><%= v.getVehicleType() %></td>
+                                    <td><%= v.getMake() %> <%= v.getModel() %></td>
+                                    <td><%= v.getColor() %></td>
+                                </tr>
+                            <% } } else { %>
+                                <tr>
+                                    <td colspan="4" class="no-data">No vehicles registered yet.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>
