@@ -2,10 +2,22 @@ package com.park.ease.service;
 
 import com.park.ease.dao.SessionDAO;
 import com.park.ease.daoimpl.SessionDAOImpl;
+import com.park.ease.model.ParkingSession;
+import java.util.List;
 
 public class SessionService {
 
     private SessionDAO sessionDAO = new SessionDAOImpl();
+
+    // New Method: Fetch details for a specific receipt
+    public ParkingSession getSessionDetails(int sessionId) {
+        return sessionDAO.getSessionById(sessionId);
+    }
+
+    // New Method: Fetch all completed sessions for the reports table
+    public List<ParkingSession> getCompletedSessions() {
+        return sessionDAO.getAllCompletedSessions();
+    }
 
     public double getTotalRevenue() {
         return sessionDAO.getTotalRevenue();
