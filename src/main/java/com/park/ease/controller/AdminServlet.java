@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.park.ease.model.User;
-import com.park.ease.model.ParkingSession; // <── Added for Receipt Model
+import com.park.ease.model.ParkingSession;
 import com.park.ease.service.SessionService;
 import com.park.ease.service.SlotService;
 import com.park.ease.service.UserService;
@@ -17,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession; // ✅ ADDED
 
 @WebServlet(urlPatterns = {"/AdminServlet", "/admin/manage-users", "/admin/reports"})
 public class AdminServlet extends HttpServlet {
@@ -31,6 +32,20 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // ✅ RBAC CHECK - MANDATORY FOR ADMIN ACCESS
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?error=session_expired");
+            return;
+        }
+        
+        User currentUser = (User) session.getAttribute("user");
+        if (!"admin".equalsIgnoreCase(currentUser.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: Admin Only");
+            return;
+        }
+        // ✅ RBAC CHECK ENDS
+
         String path = request.getServletPath();
 
         if ("/AdminServlet".equals(path)) {
@@ -42,7 +57,7 @@ public class AdminServlet extends HttpServlet {
                 loadManageUsers(request, response);
             } else if ("reports".equals(action)) {
                 loadReports(request, response);
-            } else if ("downloadReceipt".equals(action)) { // <── NEW ACTION
+            } else if ("downloadReceipt".equals(action)) {
                 handleDownloadReceipt(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/AdminServlet?action=dashboard");
@@ -58,7 +73,7 @@ public class AdminServlet extends HttpServlet {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // ⬇️ NEW: HELPER METHOD FOR RECEIPT GENERATION
+    // HELPER METHOD FOR RECEIPT GENERATION
     // ──────────────────────────────────────────────────────────────────────────
     private void handleDownloadReceipt(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -67,7 +82,6 @@ public class AdminServlet extends HttpServlet {
         if (sessionIdParam != null && !sessionIdParam.isEmpty()) {
             try {
                 int sessionId = Integer.parseInt(sessionIdParam);
-                // Call your SessionService to get the data
                 ParkingSession sessionData = sessionService.getSessionDetails(sessionId);
                 
                 if (sessionData != null) {
@@ -85,7 +99,21 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // ... (Your existing doPost logic remains exactly the same)
+        
+        // ✅ RBAC CHECK - MANDATORY FOR ADMIN ACCESS
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?error=session_expired");
+            return;
+        }
+        
+        User currentUser = (User) session.getAttribute("user");
+        if (!"admin".equalsIgnoreCase(currentUser.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+            return;
+        }
+        // ✅ RBAC CHECK ENDS
+
         String path = request.getServletPath();
         String action = request.getParameter("action");
         String userIdParam = request.getParameter("userId");
@@ -150,7 +178,6 @@ public class AdminServlet extends HttpServlet {
         int total = sessionService.getTotalSlotsCount();
         double occupancyRate = sessionService.getOccupancyRate();
 
-        // ⬇️ NEW: Also load the completed sessions list for the table
         List<ParkingSession> completedSessions = sessionService.getCompletedSessions();
         request.setAttribute("completedSessions", completedSessions);
 
