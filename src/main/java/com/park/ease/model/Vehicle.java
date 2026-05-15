@@ -2,20 +2,29 @@ package com.park.ease.model;
 
 import java.sql.Timestamp;
 
+/**
+ * Vehicle model class representing a user's registered vehicle in the ParkEase system.
+ * Maps to the 'vehicles' table in the database.
+ * 
+ * Each vehicle belongs to a registered user and is identified by a unique
+ * registration number. Vehicles are used when booking parking slots.
+ * 
+ * Vehicle types: CAR, BIKE, TRUCK
+ */
 public class Vehicle {
-    private int vehicleId;
-    private int userId; // Foreign Key to the users table
-    private String registrationNumber; // Unique
-    private String vehicleType; // e.g., CAR, BIKE, TRUCK
-    private String make;
-    private String model;
-    private String color;
-    private Timestamp createdAt;
 
-    // Default Constructor
+    private int vehicleId;               // Primary key - unique vehicle identifier
+    private int userId;                  // Foreign key referencing the users table
+    private String registrationNumber;   // Unique vehicle registration/license plate number
+    private String vehicleType;          // Type of vehicle: CAR, BIKE, or TRUCK
+    private String make;                 // Vehicle manufacturer (e.g., Toyota, Honda)
+    private String model;                // Vehicle model name (e.g., Corolla, Civic)
+    private String color;                // Vehicle color for identification
+    private Timestamp createdAt;         // Timestamp when vehicle was registered
+
+    /** Default constructor required for object instantiation. */
     public Vehicle() {}
 
-    // Getters and Setters
     public int getVehicleId() { return vehicleId; }
     public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
