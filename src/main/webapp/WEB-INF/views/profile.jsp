@@ -97,10 +97,12 @@
                     <h3>Add New Vehicle</h3>
                     <form action="${pageContext.request.contextPath}/UserServlet?action=addVehicle" method="POST" class="profile-form">
                         <input type="text" name="regNo" class="form-input" placeholder="Registration Number" required>
-                        <select name="type" class="form-input">
-                            <option value="CAR">Car</option>
-                            <option value="BIKE">Bike</option>
-                        </select>
+                        <select name="type" class="form-input" required>
+    <option value="compact">Compact</option>
+    <option value="large">Large</option>
+    <option value="electric">Electric</option>
+    <option value="motorcycle">Motorcycle</option>
+</select>
                         <input type="text" name="make" class="form-input" placeholder="Make (e.g. Toyota)" required>
                         <input type="text" name="model" class="form-input" placeholder="Model (e.g. Corolla)" required>
                         <input type="text" name="color" class="form-input" placeholder="Color" required>

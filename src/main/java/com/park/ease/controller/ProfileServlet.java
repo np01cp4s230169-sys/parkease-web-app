@@ -17,24 +17,28 @@ import com.park.ease.model.Vehicle;
 @WebServlet("/ProfileServlet")
 public class ProfileServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    
+    // Model Layer dependency
     private VehicleDAO vehicleDAO = new VehicleDAOImpl();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
+        // 1. Controller Logic: Check Authentication
         if (user == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        // 1. Fetch vehicles for this specific user
+        // 2. Model Logic: Fetch data for the View
         List<Vehicle> userVehicles = vehicleDAO.getVehiclesByUserId(user.getUserId());
 
-        // 2. Pass the list to the JSP
+        // 3. MVC Communication: Attach data to the Request object
         request.setAttribute("vehicles", userVehicles);
 
-        // 3. Forward the request to profile.jsp (The View)
+        // 4. Navigation: Forward to the View (profile.jsp)
+        // Note: Using forward keeps the URL as 'ProfileServlet' but shows the JSP content
         request.getRequestDispatcher("profile.jsp").forward(request, response);
     }
 
