@@ -34,7 +34,7 @@ public class UserAuthFilter implements Filter {
                 && ("register".equals(action) || "doRegister".equals(action));
         boolean isLandingPage = path.equals("/") || path.equals("/index.jsp");
         boolean isAsset = path.startsWith("/assets/");
-        
+        boolean isErrorPage = path.equals("/WEB-INF/views/error.jsp");
         // CRITICAL UPDATE: Whitelists page view requests (GET) and form processing runs (POST)
         boolean isPublicPage = path.equals("/pages") && (
                 "about".equals(action) || 
@@ -45,16 +45,25 @@ public class UserAuthFilter implements Filter {
         boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 
         // Include isPublicPage inside your non-authenticated permission group check
-        if (isLoginPage || isLogoutPage || isRegisterPage || isLandingPage || isAsset || isPublicPage) {
+        if (isLoginPage || isLogoutPage || isRegisterPage || isLandingPage || isAsset || isPublicPage || isErrorPage) {
             chain.doFilter(request, response);
             return;
         }
 
         if (!isLoggedIn) {
+            boolean isKnownPath = path.equals("/AdminServlet") || path.startsWith("/admin/")
+                    || path.equals("/BookingServlet") || path.equals("/VehicleServlet")
+                    || path.equals("/UserServlet") || path.equals("/SlotServlet")
+                    || path.equals("/ZoneServlet") || path.equals("/ProfileServlet");
+
+            if (!isKnownPath) {
+                chain.doFilter(request, response);
+                return;
+            }
+
             httpResponse.sendRedirect(contextPath + "/LoginServlet");
             return;
         }
-
         User user = (User) session.getAttribute("user");
         String role = user.getRole();
 
