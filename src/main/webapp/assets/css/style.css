@@ -727,5 +727,14 @@ a {
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 
+.btn-secondary:disabled {
+    cursor: not-allowed;
+}
 /* ... add ALL profile classes from my previous message ... */
