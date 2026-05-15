@@ -1,75 +1,109 @@
 package com.park.ease.controller;
 
+import java.io.IOException;
+
+import com.park.ease.model.User;
+import com.park.ease.model.Vehicle;
+import com.park.ease.service.VehicleService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
 
-import com.park.ease.dao.VehicleDAO;
-import com.park.ease.daoimpl.VehicleDAOImpl;
-import com.park.ease.model.User;
-import com.park.ease.model.Vehicle;
-
+/**
+ * VehicleServlet handles vehicle registration for logged-in users.
+ * Allows users to add new vehicles to their account which are then
+ * used when booking parking slots.
+ * 
+ * Note: Vehicle listing and deletion are handled through UserServlet
+ * and the profile page to keep responsibilities separated.
+ * 
+ * URL Pattern: /VehicleServlet
+ */
 @WebServlet("/VehicleServlet")
 public class VehicleServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    
-    // Controller depends on the DAO (Model Layer interface)
-    private VehicleDAO vehicleDAO;
 
+    // Service layer dependency - controller must not access DAO directly
+    private VehicleService vehicleService = new VehicleService();
+
+    /**
+     * Handles GET requests - redirects to user profile page.
+     */
     @Override
-    public void init() throws ServletException {
-        // Initialize the DAO implementation
-        vehicleDAO = new VehicleDAOImpl();
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    /**
+     * Handles POST requests - processes new vehicle registration.
+     * Validates all required vehicle fields and user session
+     * before saving the vehicle record to the database.
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // MVC: Controller redirects to the View (Profile page)
-        response.sendRedirect("profile.jsp");
-    }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        // 1. MVC Controller: Get data from Session (The Context)
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        try {
+            // Validate user session is active before processing
+            HttpSession session = request.getSession(false);
+            User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        if (user == null) {
-            response.sendRedirect("login.jsp");
-            return;
+            if (user == null) {
+                response.sendRedirect(request.getContextPath() + "/LoginServlet");
+                return;
+            }
+
+            // Retrieve and trim vehicle form parameters
+            String regNum = request.getParameter("registrationNumber");
+            String type = request.getParameter("vehicleType");
+            String make = request.getParameter("make");
+            String model = request.getParameter("model");
+            String color = request.getParameter("color");
+
+            if (regNum != null) regNum = regNum.trim();
+            if (type != null) type = type.trim();
+            if (make != null) make = make.trim();
+            if (model != null) model = model.trim();
+            if (color != null) color = color.trim();
+
+            // Validate required fields are not empty
+            if (regNum == null || regNum.isEmpty()
+                    || type == null || type.isEmpty()
+                    || make == null || make.isEmpty()
+                    || model == null || model.isEmpty()) {
+                session.setAttribute("errorMsg", "Registration number, type, make, and model are required.");
+                response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
+                return;
+            }
+
+            // Build vehicle object associated with the current user
+            Vehicle vehicle = new Vehicle();
+            vehicle.setUserId(user.getUserId());
+            vehicle.setRegistrationNumber(regNum);
+            vehicle.setVehicleType(type);
+            vehicle.setMake(make);
+            vehicle.setModel(model);
+            vehicle.setColor(color != null ? color : "");
+
+            // Save vehicle through service layer
+            boolean isSaved = vehicleService.addVehicle(vehicle);
+
+            if (isSaved) {
+                session.setAttribute("successMsg", "Vehicle '" + regNum + "' registered successfully.");
+            } else {
+                session.setAttribute("errorMsg", "Failed to register vehicle. Registration number may already exist.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.getSession().setAttribute("errorMsg", "An unexpected error occurred while registering vehicle.");
         }
 
-        // 2. MVC Controller: Capture data from View (The Form)
-        String regNum = request.getParameter("registrationNumber");
-        String type = request.getParameter("vehicleType");
-        String make = request.getParameter("make");
-        String model = request.getParameter("model");
-        String color = request.getParameter("color");
-
-        // 3. MVC Model: Populate the Data Model
-        Vehicle vehicle = new Vehicle();
-        vehicle.setUserId(user.getUserId());
-        vehicle.setRegistrationNumber(regNum);
-        vehicle.setVehicleType(type);
-        vehicle.setMake(make);
-        vehicle.setModel(model);
-        vehicle.setColor(color);
-
-        // 4. MVC Controller: Ask the Model Layer to save the data
-        boolean isSaved = vehicleDAO.addVehicle(vehicle);
-
-        // 5. MVC View Navigation: Direct the user based on the outcome
-        if (isSaved) {
-            // Success: Send them back to profile with a success flag
-            response.sendRedirect("profile.jsp?status=success");
-        } else {
-            // Failure: Send them back with a fail flag
-            response.sendRedirect("profile.jsp?status=failed");
-        }
+        response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
     }
 }
