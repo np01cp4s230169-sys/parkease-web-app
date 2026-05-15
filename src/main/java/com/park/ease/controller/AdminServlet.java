@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.park.ease.model.User;
+import com.park.ease.model.ParkingSession; // <── Added for Receipt Model
 import com.park.ease.service.SessionService;
 import com.park.ease.service.SlotService;
 import com.park.ease.service.UserService;
-import com.park.ease.model.Inquiry;       // <── NEW: Allows servlet to hold inquiry objects
-import com.park.ease.service.InquiryService; // <── NEW: Points to the data-fetching service
-
+import com.park.ease.model.Inquiry;
+import com.park.ease.service.InquiryService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -42,31 +42,55 @@ public class AdminServlet extends HttpServlet {
                 loadManageUsers(request, response);
             } else if ("reports".equals(action)) {
                 loadReports(request, response);
+            } else if ("downloadReceipt".equals(action)) { // <── NEW ACTION
+                handleDownloadReceipt(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/AdminServlet?action=dashboard");
             }
 
         } else if ("/admin/manage-users".equals(path)) {
             loadManageUsers(request, response);
-
         } else if ("/admin/reports".equals(path)) {
             loadReports(request, response);
-
         } else {
             response.sendRedirect(request.getContextPath() + "/AdminServlet?action=dashboard");
         }
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // ⬇️ NEW: HELPER METHOD FOR RECEIPT GENERATION
+    // ──────────────────────────────────────────────────────────────────────────
+    private void handleDownloadReceipt(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String sessionIdParam = request.getParameter("sessionId");
+        
+        if (sessionIdParam != null && !sessionIdParam.isEmpty()) {
+            try {
+                int sessionId = Integer.parseInt(sessionIdParam);
+                // Call your SessionService to get the data
+                ParkingSession sessionData = sessionService.getSessionDetails(sessionId);
+                
+                if (sessionData != null) {
+                    request.setAttribute("receipt", sessionData);
+                    request.getRequestDispatcher("/WEB-INF/views/receipt.jsp").forward(request, response);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        response.sendRedirect(request.getContextPath() + "/AdminServlet?action=reports&error=not_found");
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        // ... (Your existing doPost logic remains exactly the same)
         String path = request.getServletPath();
         String action = request.getParameter("action");
         String userIdParam = request.getParameter("userId");
 
         if ("/admin/manage-users".equals(path) || "/AdminServlet".equals(path)) {
-
             if (userIdParam == null || userIdParam.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/AdminServlet?action=manageUsers&error=invalid_user");
                 return;
@@ -95,7 +119,6 @@ public class AdminServlet extends HttpServlet {
             }
             return;
         }
-
         response.sendRedirect(request.getContextPath() + "/AdminServlet?action=dashboard");
     }
 
@@ -104,18 +127,14 @@ public class AdminServlet extends HttpServlet {
         Map<String, Integer> dashboardStats = slotService.getDashboardStats();
         double totalRevenue = sessionService.getTotalRevenue();
         
-        // ──────────────────────────────────────────────────────────────────────────
-        // ⬇️ NEW: FETCHES DATA ROWS AND PASSES THE ARRAY LIST TO THE VIEW CONTAINER
         List<Inquiry> activeInquiries = inquiryService.viewAllInquiries();
         request.setAttribute("inquiriesList", activeInquiries); 
-        // ──────────────────────────────────────────────────────────────────────────
 
         request.setAttribute("dashboardStats", dashboardStats);
         request.setAttribute("totalRevenue", totalRevenue);
         
         request.getRequestDispatcher("/WEB-INF/views/admin_dashboard.jsp").forward(request, response);
     }
-
 
     private void loadManageUsers(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -130,6 +149,10 @@ public class AdminServlet extends HttpServlet {
         int occupied = sessionService.getOccupiedSlotsCount();
         int total = sessionService.getTotalSlotsCount();
         double occupancyRate = sessionService.getOccupancyRate();
+
+        // ⬇️ NEW: Also load the completed sessions list for the table
+        List<ParkingSession> completedSessions = sessionService.getCompletedSessions();
+        request.setAttribute("completedSessions", completedSessions);
 
         request.setAttribute("totalRevenue", revenue);
         request.setAttribute("occupiedSlots", occupied);
