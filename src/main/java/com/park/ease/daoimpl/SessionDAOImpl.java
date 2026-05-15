@@ -174,11 +174,9 @@ public class SessionDAOImpl implements SessionDAO {
     public List<ParkingSession> getAllCompletedSessions() {
         List<ParkingSession> sessions = new ArrayList<>();
         String sql = "SELECT * FROM parking_sessions WHERE status = 'completed' ORDER BY exit_time DESC";
-
         try (Connection con = DBConnectionUtil.getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-
             while (rs.next()) {
                 sessions.add(mapResultSetToSession(rs));
             }
