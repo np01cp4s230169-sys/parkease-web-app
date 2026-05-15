@@ -736,5 +736,59 @@ a {
 
 .btn-secondary:disabled {
     cursor: not-allowed;
+}  
+/* Success button for booking */
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-success.btn-small {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Danger button for remove */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-danger.btn-small {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Table button flexbox for multiple buttons */
+.table-btn-flexbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-btn-flexbox form {
+    margin: 0;
+    display: inline-block;
 }
 /* ... add ALL profile classes from my previous message ... */
