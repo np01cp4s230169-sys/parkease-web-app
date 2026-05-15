@@ -1,13 +1,22 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.park.ease.model.*, java.util.List" %>
 <%
-    String msg = request.getParameter("msg");
-    String error = request.getParameter("error");
-
-    Integer totalBookings = (Integer) request.getAttribute("totalBookings");
-    if (totalBookings == null) {
-        totalBookings = 0;
+    /* Security check: Redirect to login if user session is not active */
+    User currentUser = (User) session.getAttribute("user");
+    if (currentUser == null) {
+        response.sendRedirect(request.getContextPath() + "/LoginServlet");
+        return;
     }
+
+    /* Read session messages and clear them after display */
+    String successMsg = (String) session.getAttribute("successMsg");
+    String errorMsg = (String) session.getAttribute("errorMsg");
+    if (successMsg != null) session.removeAttribute("successMsg");
+    if (errorMsg != null) session.removeAttribute("errorMsg");
+
+    /* Load booking data from request attributes set by BookingServlet */
+    Integer totalBookings = (Integer) request.getAttribute("totalBookings");
+    if (totalBookings == null) totalBookings = 0;
 
     List<ParkingSession> activeSessions = (List<ParkingSession>) request.getAttribute("activeSessions");
     List<ParkingSession> completedSessions = (List<ParkingSession>) request.getAttribute("completedSessions");
@@ -22,6 +31,8 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
+
+        <!-- Sidebar navigation for user portal -->
         <aside class="sidebar">
             <div class="sidebar-header"><h2>ParkEase</h2></div>
             <nav class="sidebar-nav">
@@ -33,42 +44,46 @@
             </nav>
         </aside>
 
+        <!-- Main content area -->
         <main class="main-content">
             <header class="content-header">
                 <h1>My Parking Records</h1>
+                <div class="user-badge"><%= currentUser.getRole() %></div>
             </header>
 
-            <!-- SUCCESS MESSAGES -->
-            <% if ("checked_out".equals(msg)) { %>
-                <div class="alert-success">
-                    Session ended successfully. Total charge: ₹<%= request.getParameter("charge") %>
+            <!-- Success and error alerts from session -->
+            <% if (successMsg != null) { %>
+                <div class="alert-success"><%= successMsg %></div>
+            <% } %>
+            <% if (errorMsg != null) { %>
+                <div class="alert-danger"><%= errorMsg %></div>
+            <% } %>
+
+            <!-- Total bookings summary card -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Bookings</h3>
+                    <p class="stat-number"><%= totalBookings %></p>
                 </div>
-            <% } else if ("booking_success".equals(msg)) { %>
-                <div class="alert-success">Slot booked successfully!</div>
-            <% } %>
-
-            <!-- ERROR MESSAGES -->
-            <% if ("checkout_failed".equals(error)) { %>
-                <div class="alert-danger">Failed to complete checkout.</div>
-            <% } else if ("invalid_session".equals(error)) { %>
-                <div class="alert-danger">Invalid session details.</div>
-            <% } %>
-
-            <!-- TOTAL BOOKINGS CARD -->
-            <section class="stat-card">
-                <h3>Total Bookings</h3>
-                <p class="stat-number"><%= totalBookings %></p>
+                <div class="stat-card">
+                    <h3>Active Sessions</h3>
+                    <p class="stat-number"><%= activeSessions != null ? activeSessions.size() : 0 %></p>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed Sessions</h3>
+                    <p class="stat-number"><%= completedSessions != null ? completedSessions.size() : 0 %></p>
+                </div>
             </section>
 
-            <!-- ACTIVE SESSIONS TABLE -->
+            <!-- Active parking sessions table -->
             <section class="management-section">
                 <h2>Current Active Sessions</h2>
                 <div class="table-scroll-container">
-                    <table class="data-table">
+                    <table class="responsive-data-table">
                         <thead>
                             <tr>
                                 <th>Session ID</th>
-                                <th>Slot #</th>
+                                <th>Slot</th>
                                 <th>Vehicle ID</th>
                                 <th>Entry Time</th>
                                 <th>Status</th>
@@ -83,12 +98,15 @@
                                     <td><strong><%= s.getSlotId() %></strong></td>
                                     <td><%= s.getVehicleId() %></td>
                                     <td><%= s.getEntryTime() %></td>
-                                    <td><span class="status-active">PARKED</span></td>
-                                    <td class="table-btn-flexbox">
-                                        <form action="${pageContext.request.contextPath}/BookingServlet?action=endSession" method="POST">
+                                    <td><span class="status-badge occupied">PARKED</span></td>
+                                    <td>
+                                        <!-- End session form with confirmation -->
+                                        <form action="${pageContext.request.contextPath}/BookingServlet" method="POST"
+                                              onsubmit="return confirm('Are you sure you want to end this session?');">
+                                            <input type="hidden" name="action" value="endSession">
                                             <input type="hidden" name="sessionId" value="<%= s.getSessionId() %>">
                                             <input type="hidden" name="slotId" value="<%= s.getSlotId() %>">
-                                            <button type="submit" class="btn-primary">End Session</button>
+                                            <button type="submit" class="btn-danger btn-small">End Session</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -102,22 +120,22 @@
                 </div>
             </section>
 
-            <!-- COMPLETED SESSIONS TABLE -->
+            <!-- Completed parking sessions table -->
             <section class="management-section">
                 <h2>Completed Sessions</h2>
                 <div class="table-scroll-container">
-                    <table class="data-table">
+                    <table class="responsive-data-table">
                         <thead>
                             <tr>
                                 <th>Session ID</th>
-                                <th>Slot #</th>
+                                <th>Slot</th>
                                 <th>Vehicle ID</th>
                                 <th>Entry Time</th>
                                 <th>Exit Time</th>
-                                <th>Total Hours</th>
-                                <th>Total Charges</th>
+                                <th>Hours</th>
+                                <th>Charges</th>
                                 <th>Status</th>
-                                <th>Receipt</th> <!-- NEW COLUMN -->
+                                <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -129,15 +147,14 @@
                                     <td><%= s.getVehicleId() %></td>
                                     <td><%= s.getEntryTime() %></td>
                                     <td><%= s.getExitTime() %></td>
-                                    <td><%= s.getTotalHours() %></td>
-                                    <td>₹<%= s.getTotalCharges() %></td>
-                                    <td><span class="status-completed">COMPLETED</span></td>
-                                    
-                                    <!-- NEW: Receipt Button -->
-                                    <td class="table-btn-flexbox">
-                                        <a href="${pageContext.request.contextPath}/BookingServlet?action=viewReceipt&sessionId=<%= s.getSessionId() %>" 
-                                           class="btn-receipt btn-small" target="_blank">
-                                            📄 View
+                                    <td><%= String.format("%.1f", s.getTotalHours()) %> hrs</td>
+                                    <td>Rs. <%= String.format("%.2f", s.getTotalCharges()) %></td>
+                                    <td><span class="status-badge available">COMPLETED</span></td>
+                                    <td>
+                                        <!-- View receipt link for completed sessions -->
+                                        <a href="${pageContext.request.contextPath}/AdminServlet?action=downloadReceipt&sessionId=<%= s.getSessionId() %>"
+                                           class="btn-primary" style="width:auto; padding:6px 12px; font-size:13px;">
+                                            View Receipt
                                         </a>
                                     </td>
                                 </tr>
@@ -150,6 +167,7 @@
                     </table>
                 </div>
             </section>
+
         </main>
     </div>
 </body>
