@@ -1,33 +1,54 @@
 package com.park.ease.service;
 
-import com.park.ease.dao.InquiryDAO;
-import com.park.ease.daoimpl.InquiryDAOImpl; // CRITICAL FIX: Imports the implementation class
-import com.park.ease.model.Inquiry;
-import java.util.List; // CRITICAL FIX: Added to support the data collection list
+import java.util.List;
 
+import com.park.ease.dao.InquiryDAO;
+import com.park.ease.daoimpl.InquiryDAOImpl;
+import com.park.ease.model.Inquiry;
+
+/**
+ * InquiryService handles business logic for contact form submissions
+ * in the ParkEase system.
+ * 
+ * Validates inquiry data before saving and provides retrieval
+ * of all submitted inquiries for admin review on the dashboard.
+ */
 public class InquiryService {
-    
-    // Direct link to your Data Access Layer implementation
+
+    // DAO dependency for inquiry data operations
     private final InquiryDAO inquiryDAO = new InquiryDAOImpl();
 
+    /**
+     * Processes a contact form submission by validating fields
+     * and saving the inquiry to the database.
+     * 
+     * @param name    full name of the person submitting the inquiry
+     * @param email   email address for admin to respond to
+     * @param message the inquiry or support message content
+     * @return true if inquiry was saved successfully, false if validation fails
+     */
     public boolean submitContactForm(String name, String email, String message) {
-        // Enforce strict business data boundaries
-        if (name == null || name.trim().isEmpty() || 
-            email == null || email.trim().isEmpty() || 
-            message == null || message.trim().isEmpty()) {
+        // Validate all required fields are provided
+        if (name == null || name.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || message == null || message.trim().isEmpty()) {
             return false;
         }
-        
-        // Basic syntax matching validation check
+
+        // Basic email format validation
         if (!email.contains("@") || !email.contains(".")) {
             return false;
         }
-        
+
         Inquiry inquiry = new Inquiry(name.trim(), email.trim(), message.trim());
         return inquiryDAO.saveInquiry(inquiry);
     }
 
-    // LAYER BRIDGING METHOD: FETCHES ALL SUBMITTED CUSTOMER SUPPORT RECORD ARRAYS
+    /**
+     * Retrieves all submitted inquiries for admin review.
+     * 
+     * @return list of all Inquiry objects submitted through the contact form
+     */
     public List<Inquiry> viewAllInquiries() {
         return inquiryDAO.getAllInquiries();
     }
