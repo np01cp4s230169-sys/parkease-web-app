@@ -59,15 +59,15 @@
             <section class="stats-grid">
                 <div class="stat-card">
                     <h3>Active Bookings</h3>
-                    <p class="stat-number">0</p>
+                    <p class="stat-number"><%= request.getAttribute("activeBookings") != null ? request.getAttribute("activeBookings") : 0 %></p>
                 </div>
                 <div class="stat-card">
                     <h3>Available Slots</h3>
-                    <p class="stat-number">-</p>
+                    <p class="stat-number"><%= request.getAttribute("availableSlots") != null ? request.getAttribute("availableSlots") : 0 %></p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Spent</h3>
-                    <p class="stat-number">Rs. 0.00</p>
+                    <p class="stat-number">Rs. <%= request.getAttribute("totalSpent") != null ? request.getAttribute("totalSpent") : "0.00" %></p>
                 </div>
             </section>
 

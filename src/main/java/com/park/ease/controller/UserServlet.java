@@ -3,8 +3,12 @@ package com.park.ease.controller;
 import java.io.IOException;
 import java.util.List;
 
+import java.util.Map;
+
 import com.park.ease.model.User;
 import com.park.ease.model.Vehicle;
+import com.park.ease.service.BookingService;
+import com.park.ease.service.SlotService;
 import com.park.ease.service.UserService;
 import com.park.ease.service.VehicleService;
 import com.park.ease.util.ValidationUtil;
@@ -35,6 +39,8 @@ public class UserServlet extends HttpServlet {
     // Service layer dependencies
     private UserService userService = new UserService();
     private VehicleService vehicleService = new VehicleService();
+    private SlotService slotService = new SlotService();
+    private BookingService bookingService = new BookingService();
 
     /**
      * Handles GET requests - routes to registration, dashboard, or profile pages.
@@ -59,6 +65,26 @@ public class UserServlet extends HttpServlet {
             }
             else if ("dashboard".equals(action)) {
                 if (currentUser != null) {
+                    // Load real dashboard statistics for the user
+                    Map<String, Integer> slotStats = slotService.getDashboardStats();
+                    int availableSlots = slotStats.getOrDefault("availableSlots", 0);
+
+                    // Count active bookings for this user across all their vehicles
+                    List<Vehicle> userVehicles = vehicleService.getUserVehicles(currentUser.getUserId());
+                    int activeBookings = 0;
+                    double totalSpent = 0.0;
+                    for (Vehicle v : userVehicles) {
+                        List<com.park.ease.model.ParkingSession> sessions =
+                            bookingService.getUserBookingHistory(v.getVehicleId());
+                        for (com.park.ease.model.ParkingSession s : sessions) {
+                            if ("active".equalsIgnoreCase(s.getStatus())) activeBookings++;
+                            if ("completed".equalsIgnoreCase(s.getStatus())) totalSpent += s.getTotalCharges();
+                        }
+                    }
+
+                    request.setAttribute("activeBookings", activeBookings);
+                    request.setAttribute("availableSlots", availableSlots);
+                    request.setAttribute("totalSpent", String.format("%.2f", totalSpent));
                     request.getRequestDispatcher("/WEB-INF/views/user_dashboard.jsp").forward(request, response);
                 } else {
                     response.sendRedirect(request.getContextPath() + "/LoginServlet");

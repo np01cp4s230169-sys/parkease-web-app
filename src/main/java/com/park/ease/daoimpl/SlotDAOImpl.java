@@ -20,9 +20,26 @@ public class SlotDAOImpl implements SlotDAO {
 
     /**
      * Inserts a new parking slot record into the parking_slots table.
+     * Checks for duplicate slot number within the same zone before inserting.
      */
     @Override
     public boolean addSlot(ParkingSlot slot) {
+        // Check if slot number already exists in the same zone
+        String checkSql = "SELECT COUNT(*) FROM parking_slots WHERE zone_id = ? AND LOWER(slot_number) = LOWER(?)";
+        try (Connection con = DBConnectionUtil.getConnection();
+             PreparedStatement checkPs = con.prepareStatement(checkSql)) {
+            checkPs.setInt(1, slot.getZoneId());
+            checkPs.setString(2, slot.getSlotNumber());
+            try (ResultSet rs = checkPs.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
         String sql = "INSERT INTO parking_slots (zone_id, slot_number, vehicle_type, hourly_rate, status) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = DBConnectionUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
