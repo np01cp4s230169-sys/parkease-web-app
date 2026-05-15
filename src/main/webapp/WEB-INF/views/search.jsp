@@ -160,14 +160,30 @@
                                     <td>₹<%= slot.getHourlyRate() %></td>
                                     <td><span class="status-badge <%= slot.getStatus().toLowerCase() %>"><%= slot.getStatus() %></span></td>
                                     <td class="table-btn-flexbox">
-                                        <form action="${pageContext.request.contextPath}/SlotServlet?action=removeFromWishlist" method="POST" class="wishlist-form">
-                                            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
-                                            <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
-                                            <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
-                                            <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
-                                            <button type="submit" class="btn-danger btn-small">🗑️ Remove</button>
-                                        </form>
-                                    </td>
+    <%
+        boolean alreadyInWishlist = false;
+        if (wishlistSlots != null) {
+            for (ParkingSlot wishSlot : wishlistSlots) {
+                if (wishSlot.getSlotId() == slot.getSlotId()) {
+                    alreadyInWishlist = true;
+                    break;
+                }
+            }
+        }
+    %>
+
+    <% if (alreadyInWishlist) { %>
+        <button type="button" class="btn-secondary btn-small" disabled>✅ Added</button>
+    <% } else { %>
+        <form action="${pageContext.request.contextPath}/SlotServlet?action=addToWishlist" method="POST" class="wishlist-form">
+            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
+            <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
+            <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
+            <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
+            <button type="submit" class="btn-primary btn-small">❤️ Add</button>
+        </form>
+    <% } %>
+</td>
                                 </tr>
                             <%      }
                                  } else { %>
