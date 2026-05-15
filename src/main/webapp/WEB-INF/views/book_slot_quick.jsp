@@ -1,15 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.park.ease.model.*, java.util.List" %>
 <%
+    /* Security check: Redirect to login if user session is not active */
     User user = (User) session.getAttribute("user");
-    ParkingSlot slot = (ParkingSlot) request.getAttribute("slot");
-    List<Vehicle> vehicles = (List<Vehicle>) request.getAttribute("vehicles");
-
     if (user == null) {
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
         return;
     }
 
+    /* Load slot and vehicle data from request attributes set by BookingServlet */
+    ParkingSlot slot = (ParkingSlot) request.getAttribute("slot");
+    List<Vehicle> vehicles = (List<Vehicle>) request.getAttribute("vehicles");
+
+    /* Redirect back to search if required data is missing */
     if (slot == null || vehicles == null) {
         response.sendRedirect(request.getContextPath() + "/SlotServlet?action=search");
         return;
@@ -25,6 +28,8 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
+
+        <!-- Sidebar navigation for user portal -->
         <aside class="sidebar">
             <div class="sidebar-header"><h2>ParkEase</h2></div>
             <nav class="sidebar-nav">
@@ -36,84 +41,71 @@
             </nav>
         </aside>
 
+        <!-- Main content area -->
         <main class="main-content">
             <header class="content-header">
-                <h1>🚗 Confirm Your Booking</h1>
+                <h1>Confirm Your Booking</h1>
+                <div class="user-badge"><%= user.getRole() %></div>
             </header>
 
-            <!-- SELECTED SLOT DETAILS -->
-            <section class="stat-card booking-details-card">
-                <h2>📋 Selected Parking Slot</h2>
-                <div class="booking-details-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Slot Number:</span>
-                        <span class="detail-value"><strong><%= slot.getSlotNumber() %></strong></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Zone ID:</span>
-                        <span class="detail-value"><%= slot.getZoneId() %></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Vehicle Type:</span>
-                        <span class="detail-value"><%= slot.getVehicleType() %></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hourly Rate:</span>
-                        <span class="detail-value price">₹<%= slot.getHourlyRate() %></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Status:</span>
+            <!-- Selected slot details summary -->
+            <section class="stat-card" style="margin-bottom: 1.5rem;">
+                <h3>Selected Parking Slot</h3>
+                <div class="profile-info">
+                    <p><strong>Slot Number:</strong> <%= slot.getSlotNumber() %></p>
+                    <p><strong>Zone:</strong> Zone <%= slot.getZoneId() %></p>
+                    <p><strong>Vehicle Type:</strong> <%= slot.getVehicleType() %></p>
+                    <p><strong>Hourly Rate:</strong> Rs. <%= String.format("%.2f", slot.getHourlyRate()) %> per hour</p>
+                    <p><strong>Status:</strong>
                         <span class="status-badge <%= slot.getStatus().toLowerCase() %>">
                             <%= slot.getStatus() %>
                         </span>
-                    </div>
+                    </p>
                 </div>
             </section>
 
-            <!-- BOOKING FORM -->
-            <section class="stat-card">
-                <h2>🚘 Select Your Vehicle</h2>
-                <form action="${pageContext.request.contextPath}/BookingServlet?action=confirmBooking" 
-                      method="POST" class="profile-form">
-                    
+            <!-- Vehicle selection and booking confirmation form -->
+            <section class="stat-card" style="margin-bottom: 1.5rem;">
+                <h3>Select Your Vehicle</h3>
+                <form action="${pageContext.request.contextPath}/BookingServlet" method="POST" class="profile-form">
+                    <input type="hidden" name="action" value="confirmBooking">
                     <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
-                    
+
                     <div class="form-group">
-                        <label for="vehicleId">Choose Vehicle <span class="required">*</span></label>
+                        <label for="vehicleId">Choose Vehicle</label>
                         <select name="vehicleId" id="vehicleId" class="form-input" required>
                             <option value="">-- Select Your Vehicle --</option>
                             <% for (Vehicle v : vehicles) { %>
                                 <option value="<%= v.getVehicleId() %>">
-                                    <%= v.getRegistrationNumber() %> - 
-                                    <%= v.getMake() %> <%= v.getModel() %> 
+                                    <%= v.getRegistrationNumber() %> -
+                                    <%= v.getMake() %> <%= v.getModel() %>
                                     (<%= v.getVehicleType() %>)
                                 </option>
                             <% } %>
                         </select>
                     </div>
 
-                    <div class="form-actions" style="display: flex; gap: 12px; margin-top: 24px;">
-                        <button type="submit" class="btn-primary" style="flex: 1;">
-                            ✅ Confirm Booking
-                        </button>
-                        <a href="${pageContext.request.contextPath}/SlotServlet?action=search" 
-                           class="btn-secondary" style="flex: 1; text-align: center; padding: 12px;">
-                            ❌ Cancel
+                    <div style="display: flex; gap: 12px; margin-top: 1rem;">
+                        <button type="submit" class="btn-primary">Confirm Booking</button>
+                        <a href="${pageContext.request.contextPath}/SlotServlet?action=search"
+                           class="btn-secondary" style="text-align: center; padding: 0.8rem 1.5rem;">
+                            Cancel
                         </a>
                     </div>
                 </form>
             </section>
 
-            <!-- INFO BOX -->
-            <section class="info-box">
-                <h3>ℹ️ Booking Information</h3>
-                <ul>
-                    <li>✓ Your parking session will start immediately after confirmation</li>
-                    <li>✓ You can view active bookings in "My Bookings" section</li>
-                    <li>✓ Hourly rate: ₹<%= slot.getHourlyRate() %>/hour</li>
-                    <li>✓ Payment will be calculated upon checkout</li>
-                </ul>
+            <!-- Booking information notice -->
+            <section class="stat-card">
+                <h3>Booking Information</h3>
+                <div class="profile-info">
+                    <p>Your parking session will start immediately after confirmation.</p>
+                    <p>Hourly rate: Rs. <%= String.format("%.2f", slot.getHourlyRate()) %> per hour.</p>
+                    <p>Payment will be calculated automatically upon checkout.</p>
+                    <p>You can view and manage your booking in the My Bookings section.</p>
+                </div>
             </section>
+
         </main>
     </div>
 </body>
