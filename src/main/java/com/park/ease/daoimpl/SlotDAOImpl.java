@@ -136,7 +136,7 @@ public class SlotDAOImpl implements SlotDAO {
         }
         if (vehicleType != null && !vehicleType.trim().isEmpty()) {
             sql.append(" AND vehicle_type = ?");
-            params.add(vehicleType.trim().toUpperCase());
+            params.add(vehicleType.trim().toLowerCase());
         }
         if (slotNumber != null && !slotNumber.trim().isEmpty()) {
             sql.append(" AND LOWER(slot_number) LIKE ?");
