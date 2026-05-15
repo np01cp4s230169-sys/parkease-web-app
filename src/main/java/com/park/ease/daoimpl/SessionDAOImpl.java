@@ -20,7 +20,6 @@ public class SessionDAOImpl implements SessionDAO {
             con = DBConnectionUtil.getConnection();
             con.setAutoCommit(false);
 
-            // Create Session Entry
             try (PreparedStatement psSession = con.prepareStatement(insertSessionSql, Statement.RETURN_GENERATED_KEYS)) {
                 psSession.setInt(1, session.getVehicleId());
                 psSession.setInt(2, session.getSlotId());
@@ -31,13 +30,12 @@ public class SessionDAOImpl implements SessionDAO {
                 }
             }
 
-            // Update Slot Status to occupied
             try (PreparedStatement psSlot = con.prepareStatement(updateSlotSql)) {
                 psSlot.setInt(1, session.getSlotId());
                 int slotUpdated = psSlot.executeUpdate();
                 
                 if(slotUpdated == 0) {
-                	throw new SQLException("Slot is not available or update failed");
+                    throw new SQLException("Slot is not available or update failed");
                 }
             }
 
@@ -55,14 +53,6 @@ public class SessionDAOImpl implements SessionDAO {
             e.printStackTrace();
             return false;
         } finally {
-        	if (con!=null) {
-        		try {
-        			con.setAutoCommit(true);
-        			
-        		} catch (SQLException e) {
-        			e.printStackTrace();
-        		}
-        	}
             closeConnection(con);
         }
     }
@@ -111,16 +101,10 @@ public class SessionDAOImpl implements SessionDAO {
             e.printStackTrace();
             return false;
         } finally {
-            if (con != null) {
-                try {
-                    con.setAutoCommit(true);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
             closeConnection(con);
         }
     }
+
     @Override
     public List<ParkingSession> getSessionsByVehicle(int vehicleId) {
         List<ParkingSession> sessions = new ArrayList<>();
@@ -181,6 +165,27 @@ public class SessionDAOImpl implements SessionDAO {
         }
 
         return null;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // ⬇️ NEW METHOD: This fixes the "must implement inherited method" error
+    // ──────────────────────────────────────────────────────────────────────────
+    @Override
+    public List<ParkingSession> getAllCompletedSessions() {
+        List<ParkingSession> sessions = new ArrayList<>();
+        String sql = "SELECT * FROM parking_sessions WHERE status = 'completed' ORDER BY exit_time DESC";
+
+        try (Connection con = DBConnectionUtil.getConnection();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                sessions.add(mapResultSetToSession(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sessions;
     }
 
     @Override
@@ -254,7 +259,10 @@ public class SessionDAOImpl implements SessionDAO {
     private void closeConnection(Connection con) {
         if (con != null) {
             try {
-                con.setAutoCommit(true);
+                // Reset auto-commit before closing if it was changed
+                if (!con.getAutoCommit()) {
+                    con.setAutoCommit(true);
+                }
                 con.close();
             } catch (SQLException e) {
                 e.printStackTrace();
