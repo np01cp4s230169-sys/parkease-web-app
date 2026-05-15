@@ -2,18 +2,30 @@ package com.park.ease.model;
 
 import java.sql.Timestamp;
 
+/**
+ * User model class representing a registered user in the ParkEase system.
+ * Maps to the 'users' table in the database.
+ * 
+ * Roles: ADMIN (manages system), USER (books parking slots)
+ * Status: pending (awaiting approval), approved (can login), rejected (denied)
+ * 
+ * Passwords are never stored in plain text - only the hash and salt
+ * are stored, processed by EncryptionUtil.
+ */
 public class User {
-    private int userId;
-    private String name;
-    private String phone;
-    private String email;
-    private String passwordHash;
-    private String salt;
-    private String role;
-    private String status;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
 
+    private int userId;           // Primary key - unique user identifier
+    private String name;          // Full name - letters and spaces only
+    private String phone;         // Unique phone number - 10 to 15 digits
+    private String email;         // Unique email address used for login
+    private String passwordHash;  // SHA-256 hashed password
+    private String salt;          // Random salt used during password hashing
+    private String role;          // User role: ADMIN or USER
+    private String status;        // Account status: pending, approved, or rejected
+    private Timestamp createdAt;  // Timestamp when account was created
+    private Timestamp updatedAt;  // Timestamp when account was last updated
+
+    /** Default constructor required for object instantiation. */
     public User() {}
 
     public int getUserId() { return userId; }
