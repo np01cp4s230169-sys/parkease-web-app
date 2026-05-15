@@ -43,6 +43,8 @@
                 <div class="alert-success">
                     Session ended successfully. Total charge: ₹<%= request.getParameter("charge") %>
                 </div>
+            <% } else if ("booking_success".equals(msg)) { %>
+                <div class="alert-success">Slot booked successfully!</div>
             <% } %>
 
             <!-- ERROR MESSAGES -->
@@ -115,6 +117,7 @@
                                 <th>Total Hours</th>
                                 <th>Total Charges</th>
                                 <th>Status</th>
+                                <th>Receipt</th> <!-- NEW COLUMN -->
                             </tr>
                         </thead>
                         <tbody>
@@ -129,10 +132,18 @@
                                     <td><%= s.getTotalHours() %></td>
                                     <td>₹<%= s.getTotalCharges() %></td>
                                     <td><span class="status-completed">COMPLETED</span></td>
+                                    
+                                    <!-- NEW: Receipt Button -->
+                                    <td class="table-btn-flexbox">
+                                        <a href="${pageContext.request.contextPath}/BookingServlet?action=viewReceipt&sessionId=<%= s.getSessionId() %>" 
+                                           class="btn-receipt btn-small" target="_blank">
+                                            📄 View
+                                        </a>
+                                    </td>
                                 </tr>
                             <% } } else { %>
                                 <tr>
-                                    <td colspan="8" class="no-data">No completed sessions found.</td>
+                                    <td colspan="9" class="no-data">No completed sessions found.</td>
                                 </tr>
                             <% } %>
                         </tbody>
