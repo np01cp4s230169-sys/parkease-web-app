@@ -2,6 +2,10 @@ package com.park.ease.model;
 
 import java.sql.Timestamp;
 
+/**
+ * Model class for ParkingSession following the JavaBean pattern.
+ * Mapped to the parking_sessions table in the database.
+ */
 public class ParkingSession {
     private int sessionId;
     private int vehicleId;
@@ -14,8 +18,23 @@ public class ParkingSession {
     private String status;        // e.g., ACTIVE, COMPLETED
     private Timestamp createdAt;
 
-    // Default Constructor
+    // Default Constructor (Required for JavaBeans)
     public ParkingSession() {}
+
+    // Parameterized Constructor (Useful for DAO implementation)
+    public ParkingSession(int sessionId, int vehicleId, int slotId, Timestamp entryTime, 
+                          Timestamp exitTime, double totalHours, double totalCharges, 
+                          String paymentStatus, String status) {
+        this.sessionId = sessionId;
+        this.vehicleId = vehicleId;
+        this.slotId = slotId;
+        this.entryTime = entryTime;
+        this.exitTime = exitTime;
+        this.totalHours = totalHours;
+        this.totalCharges = totalCharges;
+        this.paymentStatus = paymentStatus;
+        this.status = status;
+    }
 
     // Getters and Setters
     public int getSessionId() { return sessionId; }
@@ -47,4 +66,11 @@ public class ParkingSession {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    // Optional: Overriding toString() for easier debugging in the Service Layer
+    @Override
+    public String toString() {
+        return "ParkingSession [ID=" + sessionId + ", Vehicle=" + vehicleId + 
+               ", Amount=$" + totalCharges + ", Status=" + status + "]";
+    }
 }
