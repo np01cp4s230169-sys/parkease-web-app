@@ -44,14 +44,53 @@
 
             <section class="management-section">
                 <h2>Recent Completed Transactions</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>Session ID</th><th>Hours</th><th>Amount Paid</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="4">Data visualization would load here.</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Session ID</th>
+                                <th>Hours</th>
+                                <th>Amount Paid</th>
+                                <th>Status</th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% 
+                                // Fetching the dynamic list passed by the AdminServlet
+                                List<ParkingSession> completedSessions = (List<ParkingSession>) request.getAttribute("completedSessions");
+                                
+                                if (completedSessions == null || completedSessions.isEmpty()) { 
+                            %>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 20px; color: #718096; font-style: italic;">
+                                        No completed transactions found.
+                                    </td>
+                                </tr>
+                            <% } else { 
+                                for (ParkingSession s : completedSessions) { %>
+                                <tr>
+                                    <td>#<%= s.getSessionId() %></td>
+                                    <td><%= s.getTotalHours() %> hrs</td>
+                                    <td>$<%= String.format("%.2f", s.getTotalCharges()) %></td>
+                                    <td>
+                                        <span style="color: #2f855a; font-weight: 600;">
+                                            <%= s.getPaymentStatus() %>
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <a href="AdminServlet?action=downloadReceipt&sessionId=<%= s.getSessionId() %>" 
+                                           target="_blank" 
+                                           style="color: #3182ce; text-decoration: none; font-weight: 600;">
+                                           Download Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% } 
+                            } %>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>
