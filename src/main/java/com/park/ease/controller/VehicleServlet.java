@@ -16,53 +16,60 @@ import com.park.ease.model.Vehicle;
 @WebServlet("/VehicleServlet")
 public class VehicleServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private VehicleDAO vehicleDAO = new VehicleDAOImpl();
+    
+    // Controller depends on the DAO (Model Layer interface)
+    private VehicleDAO vehicleDAO;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Typically redirects to the profile or garage page
+    @Override
+    public void init() throws ServletException {
+        // Initialize the DAO implementation
+        vehicleDAO = new VehicleDAOImpl();
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // MVC: Controller redirects to the View (Profile page)
         response.sendRedirect("profile.jsp");
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 1. Get the current session and logged-in user
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        // 1. MVC Controller: Get data from Session (The Context)
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
-        // 2. Safety check: If no user is in session, go to login
         if (user == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        try {
-            // 3. Extract form data (Match these names to your JSP input 'name' tags)
-            String regNum = request.getParameter("registrationNumber");
-            String type = request.getParameter("vehicleType");
-            String make = request.getParameter("make");
-            String model = request.getParameter("model");
-            String color = request.getParameter("color");
+        // 2. MVC Controller: Capture data from View (The Form)
+        String regNum = request.getParameter("registrationNumber");
+        String type = request.getParameter("vehicleType");
+        String make = request.getParameter("make");
+        String model = request.getParameter("model");
+        String color = request.getParameter("color");
 
-            // 4. Populate the Vehicle model
-            Vehicle vehicle = new Vehicle();
-            vehicle.setUserId(user.getUserId()); // Critical for Foreign Key
-            vehicle.setRegistrationNumber(regNum);
-            vehicle.setVehicleType(type);
-            vehicle.setMake(make);
-            vehicle.setModel(model);
-            vehicle.setColor(color);
+        // 3. MVC Model: Populate the Data Model
+        Vehicle vehicle = new Vehicle();
+        vehicle.setUserId(user.getUserId());
+        vehicle.setRegistrationNumber(regNum);
+        vehicle.setVehicleType(type);
+        vehicle.setMake(make);
+        vehicle.setModel(model);
+        vehicle.setColor(color);
 
-            // 5. Save to database using your DAO
-            boolean success = vehicleDAO.addVehicle(vehicle);
+        // 4. MVC Controller: Ask the Model Layer to save the data
+        boolean isSaved = vehicleDAO.addVehicle(vehicle);
 
-            // 6. Redirect back with a status message
-            if (success) {
-                response.sendRedirect("profile.jsp?status=success");
-            } else {
-                response.sendRedirect("profile.jsp?status=failed");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect("profile.jsp?status=error");
+        // 5. MVC View Navigation: Direct the user based on the outcome
+        if (isSaved) {
+            // Success: Send them back to profile with a success flag
+            response.sendRedirect("profile.jsp?status=success");
+        } else {
+            // Failure: Send them back with a fail flag
+            response.sendRedirect("profile.jsp?status=failed");
         }
     }
 }
