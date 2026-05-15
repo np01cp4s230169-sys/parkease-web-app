@@ -37,13 +37,13 @@
 
             <!-- MESSAGE BANNERS - Now using global alert classes -->
             <% if ("wishlist_added".equals(msg)) { %>
-                <div class="alert-success">Slot added to wishlist. ✅</div>
+                <div class="alert-success">Slot added to wishlist. </div>
             <% } else if ("already_in_wishlist".equals(msg)) { %>
-                <div class="alert-warning">Slot is already in wishlist. ⚠️</div>
+                <div class="alert-warning">Slot is already in wishlist. </div>
             <% } else if ("wishlist_removed".equals(msg)) { %>
-                <div class="alert-success">Slot removed from wishlist. ✅</div>
+                <div class="alert-success">Slot removed from wishlist. </div>
             <% } else if ("wishlist_error".equals(msg)) { %>
-                <div class="alert-danger">Unable to update wishlist. ❌</div>
+                <div class="alert-danger">Unable to update wishlist. </div>
             <% } %>
 
             <!-- SEARCH FORM - Fluid responsive -->
@@ -64,18 +64,20 @@
                                } %>
                         </select>
 
-                        <select name="vehicleType" class="form-select">
-                            <option value="">All Vehicle Types</option>
-                            <option value="CAR" <%= "CAR".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Car</option>
-                            <option value="BIKE" <%= "BIKE".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Bike</option>
-                        </select>
+                       <select name="vehicleType" class="form-select">
+    <option value="">All Vehicle Types</option>
+    <option value="compact" <%= "compact".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Compact</option>
+    <option value="large" <%= "large".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Large</option>
+    <option value="electric" <%= "electric".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Electric</option>
+    <option value="motorcycle" <%= "motorcycle".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Motorcycle</option>
+</select>
 
                         <input type="text" name="slotNumber" class="form-input" placeholder="Enter slot number"
                                value="<%= slotNumber != null ? slotNumber : "" %>">
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">🔍 Search</button>
+                        <button type="submit" class="btn-primary"> Search</button>
                     </div>
                 </form>
             </section>
@@ -112,14 +114,14 @@
                                             <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
                                             <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
                                             <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
-                                            <button type="submit" class="btn-primary btn-small">❤️ Add</button>
+                                            <button type="submit" class="btn-primary btn-small"> Add</button>
                                         </form>
                                     </td>
                                 </tr>
                             <%      }
                                  } else if (searchResults != null) { %>
                                 <tr>
-                                    <td colspan="7" class="no-data">No matching available slots found. Try different filters. 🔍</td>
+                                    <td colspan="7" class="no-data">No matching available slots found. Try different filters. </td>
                                 </tr>
                             <% } else { %>
                                 <tr>
