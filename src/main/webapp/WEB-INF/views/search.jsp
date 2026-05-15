@@ -64,89 +64,102 @@
                                } %>
                         </select>
 
-                       <select name="vehicleType" class="form-select">
-    <option value="">All Vehicle Types</option>
-    <option value="compact" <%= "compact".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Compact</option>
-    <option value="large" <%= "large".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Large</option>
-    <option value="electric" <%= "electric".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Electric</option>
-    <option value="motorcycle" <%= "motorcycle".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Motorcycle</option>
-</select>
+                        <select name="vehicleType" class="form-select">
+                            <option value="">All Vehicle Types</option>
+                            <option value="compact" <%= "compact".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Compact</option>
+                            <option value="large" <%= "large".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Large</option>
+                            <option value="electric" <%= "electric".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Electric</option>
+                            <option value="motorcycle" <%= "motorcycle".equalsIgnoreCase(selectedVehicleType) ? "selected" : "" %>>Motorcycle</option>
+                        </select>
 
                         <input type="text" name="slotNumber" class="form-input" placeholder="Enter slot number"
                                value="<%= slotNumber != null ? slotNumber : "" %>">
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary"> Search</button>
+                        <button type="submit" class="btn-primary">🔍 Search</button>
                     </div>
                 </form>
             </section>
 
-          <!-- SEARCH RESULTS TABLE - Scroll protected -->
-<section class="management-section">
-    <h2>Search Results</h2>
-    <div class="table-scroll-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Slot ID</th>
-                    <th>Zone ID</th>
-                    <th>Slot Number</th>
-                    <th>Vehicle Type</th>
-                    <th>Hourly Rate</th>
-                    <th>Status</th>
-                    <th>Wishlist</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (searchResults != null && !searchResults.isEmpty()) {
-                    for (ParkingSlot slot : searchResults) { 
-                        // Check if this slot is already in wishlist
-                        boolean alreadyInWishlist = false;
-                        if (wishlistSlots != null) {
-                            for (ParkingSlot wishSlot : wishlistSlots) {
-                                if (wishSlot.getSlotId() == slot.getSlotId()) {
-                                    alreadyInWishlist = true;
-                                    break;
-                                }
-                            }
-                        }
-                %>
-                    <tr>
-                        <td><%= slot.getSlotId() %></td>
-                        <td><%= slot.getZoneId() %></td>
-                        <td><%= slot.getSlotNumber() %></td>
-                        <td><%= slot.getVehicleType() %></td>
-                        <td>₹<%= slot.getHourlyRate() %></td>
-                        <td><span class="status-badge <%= slot.getStatus().toLowerCase() %>"><%= slot.getStatus() %></span></td>
-                        <td class="table-btn-flexbox">
-                            <% if (alreadyInWishlist) { %>
-                                <button type="button" class="btn-secondary btn-small" disabled>✅ Added</button>
+            <!-- SEARCH RESULTS TABLE - Scroll protected -->
+            <section class="management-section">
+                <h2>Search Results</h2>
+                <div class="table-scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Slot ID</th>
+                                <th>Zone ID</th>
+                                <th>Slot Number</th>
+                                <th>Vehicle Type</th>
+                                <th>Hourly Rate</th>
+                                <th>Status</th>
+                                <th>Wishlist</th>
+                                <th>Book</th> <!-- NEW COLUMN -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (searchResults != null && !searchResults.isEmpty()) {
+                                for (ParkingSlot slot : searchResults) { 
+                                    // Check if this slot is already in wishlist
+                                    boolean alreadyInWishlist = false;
+                                    if (wishlistSlots != null) {
+                                        for (ParkingSlot wishSlot : wishlistSlots) {
+                                            if (wishSlot.getSlotId() == slot.getSlotId()) {
+                                                alreadyInWishlist = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                            %>
+                                <tr>
+                                    <td><%= slot.getSlotId() %></td>
+                                    <td><%= slot.getZoneId() %></td>
+                                    <td><%= slot.getSlotNumber() %></td>
+                                    <td><%= slot.getVehicleType() %></td>
+                                    <td>₹<%= slot.getHourlyRate() %></td>
+                                    <td><span class="status-badge <%= slot.getStatus().toLowerCase() %>"><%= slot.getStatus() %></span></td>
+                                    
+                                    <!-- Wishlist Column -->
+                                    <td class="table-btn-flexbox">
+                                        <% if (alreadyInWishlist) { %>
+                                            <button type="button" class="btn-secondary btn-small" disabled>✅ Added</button>
+                                        <% } else { %>
+                                            <form action="${pageContext.request.contextPath}/SlotServlet?action=addToWishlist" method="POST" class="wishlist-form">
+                                                <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
+                                                <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
+                                                <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
+                                                <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
+                                                <button type="submit" class="btn-primary btn-small">❤️ Add</button>
+                                            </form>
+                                        <% } %>
+                                    </td>
+                                    
+                                    <!-- NEW: Book Column -->
+                                    <td class="table-btn-flexbox">
+                                        <form action="${pageContext.request.contextPath}/BookingServlet" method="GET" style="margin: 0;">
+                                            <input type="hidden" name="action" value="showQuickBooking">
+                                            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
+                                            <button type="submit" class="btn-success btn-small">🚗 Book</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <%      }
+                                 } else if (searchResults != null) { %>
+                                <tr>
+                                    <td colspan="8" class="no-data">No matching available slots found. Try different filters.</td>
+                                </tr>
                             <% } else { %>
-                                <form action="${pageContext.request.contextPath}/SlotServlet?action=addToWishlist" method="POST" class="wishlist-form">
-                                    <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
-                                    <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
-                                    <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
-                                    <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
-                                    <button type="submit" class="btn-primary btn-small">❤️ Add</button>
-                                </form>
+                                <tr>
+                                    <td colspan="8" class="no-data">Use the search form above to find available slots.</td>
+                                </tr>
                             <% } %>
-                        </td>
-                    </tr>
-                <%      }
-                     } else if (searchResults != null) { %>
-                    <tr>
-                        <td colspan="7" class="no-data">No matching available slots found. Try different filters.</td>
-                    </tr>
-                <% } else { %>
-                    <tr>
-                        <td colspan="7" class="no-data">Use the search form above to find available slots.</td>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
-    </div>
-</section>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- WISHLIST TABLE - Scroll protected -->
             <section class="management-section">
                 <h2>My Wishlist</h2>
@@ -160,6 +173,7 @@
                                 <th>Vehicle Type</th>
                                 <th>Hourly Rate</th>
                                 <th>Status</th>
+                                <th>Book</th>   <!-- NEW COLUMN -->
                                 <th>Remove</th>
                             </tr>
                         </thead>
@@ -173,36 +187,31 @@
                                     <td><%= slot.getVehicleType() %></td>
                                     <td>₹<%= slot.getHourlyRate() %></td>
                                     <td><span class="status-badge <%= slot.getStatus().toLowerCase() %>"><%= slot.getStatus() %></span></td>
+                                    
+                                    <!-- NEW: Book Column -->
                                     <td class="table-btn-flexbox">
-    <%
-        boolean alreadyInWishlist = false;
-        if (wishlistSlots != null) {
-            for (ParkingSlot wishSlot : wishlistSlots) {
-                if (wishSlot.getSlotId() == slot.getSlotId()) {
-                    alreadyInWishlist = true;
-                    break;
-                }
-            }
-        }
-    %>
-
-    <% if (alreadyInWishlist) { %>
-        <button type="button" class="btn-secondary btn-small" disabled>✅ Added</button>
-    <% } else { %>
-        <form action="${pageContext.request.contextPath}/SlotServlet?action=addToWishlist" method="POST" class="wishlist-form">
-            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
-            <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
-            <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
-            <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
-            <button type="submit" class="btn-primary btn-small">❤️ Add</button>
-        </form>
-    <% } %>
-</td>
+                                        <form action="${pageContext.request.contextPath}/BookingServlet" method="GET" style="margin: 0;">
+                                            <input type="hidden" name="action" value="showQuickBooking">
+                                            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
+                                            <button type="submit" class="btn-success btn-small">🚗 Book</button>
+                                        </form>
+                                    </td>
+                                    
+                                    <!-- Remove Column -->
+                                    <td class="table-btn-flexbox">
+                                        <form action="${pageContext.request.contextPath}/SlotServlet?action=removeFromWishlist" method="POST" style="margin: 0;">
+                                            <input type="hidden" name="slotId" value="<%= slot.getSlotId() %>">
+                                            <input type="hidden" name="zoneId" value="<%= selectedZoneId != null ? selectedZoneId : "" %>">
+                                            <input type="hidden" name="vehicleType" value="<%= selectedVehicleType != null ? selectedVehicleType : "" %>">
+                                            <input type="hidden" name="slotNumber" value="<%= slotNumber != null ? slotNumber : "" %>">
+                                            <button type="submit" class="btn-danger btn-small">🗑️ Remove</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             <%      }
                                  } else { %>
                                 <tr>
-                                    <td colspan="7" class="no-data">No slots added to wishlist yet. Find slots above! ❤️</td>
+                                    <td colspan="8" class="no-data">No slots added to wishlist yet. Find slots above! ❤️</td>
                                 </tr>
                             <% } %>
                         </tbody>
