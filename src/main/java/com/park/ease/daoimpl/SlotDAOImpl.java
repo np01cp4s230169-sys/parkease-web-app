@@ -1,16 +1,26 @@
 package com.park.ease.daoimpl;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.park.ease.dao.SlotDAO;
 import com.park.ease.model.ParkingSlot;
 import com.park.ease.util.DBConnectionUtil;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
+/**
+ * SlotDAOImpl provides JDBC-based implementation of the SlotDAO interface.
+ * Handles all database operations for parking slot records in the parking_slots table.
+ * 
+ * Uses PreparedStatements with dynamic query building for flexible slot searching.
+ */
 public class SlotDAOImpl implements SlotDAO {
 
+    /**
+     * Inserts a new parking slot record into the parking_slots table.
+     */
     @Override
     public boolean addSlot(ParkingSlot slot) {
         String sql = "INSERT INTO parking_slots (zone_id, slot_number, vehicle_type, hourly_rate, status) VALUES (?, ?, ?, ?, ?)";
@@ -28,6 +38,9 @@ public class SlotDAOImpl implements SlotDAO {
         }
     }
 
+    /**
+     * Retrieves all parking slots ordered by zone and slot number.
+     */
     @Override
     public List<ParkingSlot> getAllSlots() {
         List<ParkingSlot> slots = new ArrayList<>();
@@ -44,6 +57,9 @@ public class SlotDAOImpl implements SlotDAO {
         return slots;
     }
 
+    /**
+     * Retrieves all parking slots belonging to a specific zone.
+     */
     @Override
     public List<ParkingSlot> getSlotsByZone(int zoneId) {
         List<ParkingSlot> slots = new ArrayList<>();
@@ -62,6 +78,9 @@ public class SlotDAOImpl implements SlotDAO {
         return slots;
     }
 
+    /**
+     * Retrieves a specific parking slot by its unique ID.
+     */
     @Override
     public ParkingSlot getSlotById(int slotId) {
         String sql = "SELECT * FROM parking_slots WHERE slot_id = ?";
@@ -79,6 +98,9 @@ public class SlotDAOImpl implements SlotDAO {
         return null;
     }
 
+    /**
+     * Updates only the status field of a parking slot and records the update timestamp.
+     */
     @Override
     public boolean updateSlotStatus(int slotId, String status) {
         String sql = "UPDATE parking_slots SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE slot_id = ?";
@@ -93,6 +115,9 @@ public class SlotDAOImpl implements SlotDAO {
         }
     }
 
+    /**
+     * Updates all fields of an existing parking slot record.
+     */
     @Override
     public boolean updateSlot(ParkingSlot slot) {
         String sql = "UPDATE parking_slots SET zone_id = ?, slot_number = ?, vehicle_type = ?, hourly_rate = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE slot_id = ?";
@@ -111,6 +136,9 @@ public class SlotDAOImpl implements SlotDAO {
         }
     }
 
+    /**
+     * Deletes a parking slot record by its ID.
+     */
     @Override
     public boolean deleteSlot(int slotId) {
         String sql = "DELETE FROM parking_slots WHERE slot_id = ?";
@@ -124,12 +152,18 @@ public class SlotDAOImpl implements SlotDAO {
         }
     }
 
+    /**
+     * Searches for available slots using optional filter criteria.
+     * Dynamically builds SQL query based on provided filters.
+     * Supports filtering by zone ID, vehicle type, and slot number (partial match).
+     */
     @Override
     public List<ParkingSlot> searchAvailableSlots(Integer zoneId, String vehicleType, String slotNumber) {
         List<ParkingSlot> slots = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM parking_slots WHERE status = 'available'");
         List<Object> params = new ArrayList<>();
 
+        // Append optional filter conditions dynamically
         if (zoneId != null && zoneId > 0) {
             sql.append(" AND zone_id = ?");
             params.add(zoneId);
@@ -160,6 +194,10 @@ public class SlotDAOImpl implements SlotDAO {
         return slots;
     }
 
+    /**
+     * Retrieves dashboard statistics using a single SQL query.
+     * Returns counts of available slots, occupied slots, and pending user approvals.
+     */
     @Override
     public Map<String, Integer> getDashboardStats() {
         Map<String, Integer> stats = new HashMap<>();
@@ -182,6 +220,10 @@ public class SlotDAOImpl implements SlotDAO {
         return stats;
     }
 
+    /**
+     * Maps a database ResultSet row to a ParkingSlot model object.
+     * Reused across all methods that retrieve slot records.
+     */
     private ParkingSlot mapResultSetToSlot(ResultSet rs) throws SQLException {
         ParkingSlot slot = new ParkingSlot();
         slot.setSlotId(rs.getInt("slot_id"));

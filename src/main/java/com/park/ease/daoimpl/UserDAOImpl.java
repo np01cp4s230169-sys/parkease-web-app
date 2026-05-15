@@ -1,16 +1,27 @@
 package com.park.ease.daoimpl;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.park.ease.dao.UserDAO;
 import com.park.ease.model.User;
 import com.park.ease.util.DBConnectionUtil;
 import com.park.ease.util.EncryptionUtil;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * UserDAOImpl provides JDBC-based implementation of the UserDAO interface.
+ * Handles all database operations for user records in the users table.
+ * 
+ * Uses PreparedStatements to prevent SQL injection attacks.
+ * Passwords are verified using EncryptionUtil during login.
+ */
 public class UserDAOImpl implements UserDAO {
 
+    /**
+     * Inserts a new user record into the users table.
+     * Stores hashed password and salt instead of plain text password.
+     */
     @Override
     public boolean registerUser(User user) {
         String sql = "INSERT INTO users (name, phone, email, password_hash, salt, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -30,6 +41,10 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    /**
+     * Authenticates a user by retrieving their record by email and
+     * verifying the entered password against the stored hash and salt.
+     */
     @Override
     public User login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ?";
@@ -43,6 +58,7 @@ public class UserDAOImpl implements UserDAO {
                     String storedHash = rs.getString("password_hash");
                     String inputHash = EncryptionUtil.hashPassword(password, storedSalt);
 
+                    // Verify hashed input matches stored hash
                     if (storedHash != null && storedHash.equals(inputHash)) {
                         return mapResultSetToUser(rs);
                     }
@@ -54,13 +70,16 @@ public class UserDAOImpl implements UserDAO {
         return null;
     }
 
+    /**
+     * Checks if a phone number already exists in the users table.
+     * Used during registration to prevent duplicate accounts.
+     */
     @Override
     public boolean isPhoneExists(String phone) {
         String sql = "SELECT COUNT(*) FROM users WHERE phone = ?";
         try (Connection con = DBConnectionUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, phone);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -72,13 +91,16 @@ public class UserDAOImpl implements UserDAO {
         return false;
     }
 
+    /**
+     * Checks if an email address already exists in the users table.
+     * Used during registration to prevent duplicate accounts.
+     */
     @Override
     public boolean isEmailExists(String email) {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         try (Connection con = DBConnectionUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -90,6 +112,9 @@ public class UserDAOImpl implements UserDAO {
         return false;
     }
 
+    /**
+     * Retrieves all user records from the database.
+     */
     @Override
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
@@ -106,6 +131,9 @@ public class UserDAOImpl implements UserDAO {
         return users;
     }
 
+    /**
+     * Updates the status of a user account and records the update timestamp.
+     */
     @Override
     public boolean updateUserStatus(int userId, String status) {
         String sql = "UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
@@ -120,13 +148,15 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    /**
+     * Retrieves a specific user record by their unique ID.
+     */
     @Override
     public User getUserById(int userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try (Connection con = DBConnectionUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, userId);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToUser(rs);
@@ -138,16 +168,19 @@ public class UserDAOImpl implements UserDAO {
         return null;
     }
 
+    /**
+     * Retrieves all users with pending status excluding admin accounts.
+     * Used by admin to review and approve or reject new registrations.
+     */
     @Override
     public List<User> getPendingUsers() {
         List<User> list = new ArrayList<>();
-        // CRITICAL TRACKING FIX: EXPLICITLY FILTER BY LOWERCASE PENDING STATUS ROWS
         String sql = "SELECT * FROM users WHERE LOWER(status) = 'pending' AND LOWER(role) != 'admin'";
-        
+
         try (Connection conn = DBConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            
+
             while (rs.next()) {
                 User user = new User();
                 user.setUserId(rs.getInt("user_id"));
@@ -164,6 +197,10 @@ public class UserDAOImpl implements UserDAO {
         return list;
     }
 
+    /**
+     * Updates the password hash and salt for a user account.
+     * Called after verifying the current password in the service layer.
+     */
     @Override
     public boolean updatePassword(int userId, String passwordHash, String salt) {
         String sql = "UPDATE users SET password_hash = ?, salt = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
@@ -179,6 +216,9 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    /**
+     * Updates profile information (name, email, phone) for a user account.
+     */
     @Override
     public boolean updateProfile(User user) {
         String sql = "UPDATE users SET name = ?, email = ?, phone = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
@@ -195,6 +235,10 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    /**
+     * Checks if an email is used by any user other than the specified user.
+     * Used during profile updates to prevent email conflicts.
+     */
     @Override
     public boolean isEmailExistsForOtherUser(String email, int userId) {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ? AND user_id <> ?";
@@ -202,7 +246,6 @@ public class UserDAOImpl implements UserDAO {
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setInt(2, userId);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -214,6 +257,10 @@ public class UserDAOImpl implements UserDAO {
         return false;
     }
 
+    /**
+     * Checks if a phone number is used by any user other than the specified user.
+     * Used during profile updates to prevent phone number conflicts.
+     */
     @Override
     public boolean isPhoneExistsForOtherUser(String phone, int userId) {
         String sql = "SELECT COUNT(*) FROM users WHERE phone = ? AND user_id <> ?";
@@ -221,7 +268,6 @@ public class UserDAOImpl implements UserDAO {
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, phone);
             ps.setInt(2, userId);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -233,6 +279,10 @@ public class UserDAOImpl implements UserDAO {
         return false;
     }
 
+    /**
+     * Maps a database ResultSet row to a User model object.
+     * Reused across all methods that retrieve user records.
+     */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User u = new User();
         u.setUserId(rs.getInt("user_id"));
