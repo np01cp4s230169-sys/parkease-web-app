@@ -1,15 +1,22 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.park.ease.model.User" %>
-<%@ page import="java.util.List" %>
-
+<%@ page import="com.park.ease.model.User, java.util.List" %>
 <%
+    /* Security check: Restrict access to admin users only */
     User currentUser = (User) session.getAttribute("user");
     if (currentUser == null || !"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
         return;
     }
-%>
 
+    /* Read session messages and clear them after display */
+    String successMsg = (String) session.getAttribute("successMsg");
+    String errorMsg = (String) session.getAttribute("errorMsg");
+    if (successMsg != null) session.removeAttribute("successMsg");
+    if (errorMsg != null) session.removeAttribute("errorMsg");
+
+    /* Load pending users from request attributes set by AdminServlet */
+    List<User> pendingUsers = (List<User>) request.getAttribute("pendingUsers");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,86 +25,91 @@
     <title>ParkEase | User Approval</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
-<body class="auth-page">
+<body class="dashboard-body">
+    <div class="dashboard-container">
 
-    <div class="auth-card-wide">
-        <h1>User Registration Control</h1>
-        <p>Review and authorize pending driver registry tokens down to storage tables.</p>
+        <!-- Sidebar navigation for admin portal -->
+        <aside class="sidebar admin-sidebar">
+            <div class="sidebar-header"><h2>Admin Portal</h2></div>
+            <nav class="sidebar-nav">
+                <a href="${pageContext.request.contextPath}/AdminServlet?action=dashboard">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/AdminServlet?action=manageUsers" class="active">Approve Users</a>
+                <a href="${pageContext.request.contextPath}/ZoneServlet?action=list">Manage Zones</a>
+                <a href="${pageContext.request.contextPath}/SlotServlet?action=list">Manage Slots</a>
+                <a href="${pageContext.request.contextPath}/AdminServlet?action=reports">View Reports</a>
+                <a href="${pageContext.request.contextPath}/LogoutServlet" class="logout-link">Logout</a>
+            </nav>
+        </aside>
 
-        <% if (request.getAttribute("error") != null) { %>
-            <div class="alert alert-danger">
-                <%= request.getAttribute("error") %>
-            </div>
-        <% } %>
+        <!-- Main content area -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>User Approval Management</h1>
+                <div class="user-badge admin-tag">Admin</div>
+            </header>
 
-        <% if (request.getAttribute("success") != null) { %>
-            <div class="alert alert-success">
-                <%= request.getAttribute("success") %>
-            </div>
-        <% } %>
-
-        <% if (request.getParameter("msg") != null) { %>
-            <div class="alert alert-success">
-                Action Completed! Status updated successfully.
-            </div>
-        <% } %>
-
-        <div class="form-group">
-            <% 
-                List<User> pendingUsers = (List<User>) request.getAttribute("pendingUsers");
-                if (pendingUsers == null || pendingUsers.isEmpty()) { 
-            %>
-                <div style="text-align: center; background-color: #f8fafc; border: 1px dashed #cbd5e0; border-radius: 8px; padding: 40px 20px; color: #718096; margin: 20px 0;">
-                    <p style="font-style: italic; margin: 0;">No new user registrations are awaiting approval at this time.</p>
-                </div>
-            <% } else { %>
-                
-                <div class="table-scroll-container" style="margin-top: 20px;">
-                    <table class="responsive-data-table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid #edf2f7; text-align: left; color: #4a5568;">
-                                <th style="padding: 12px 8px;">Name</th>
-                                <th style="padding: 12px 8px;">Email</th>
-                                <th style="padding: 12px 8px;">Phone</th>
-                                <th style="padding: 12px 8px; text-align: center;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for (User pendingUser : pendingUsers) { %>
-                                <tr style="border-bottom: 1px solid #edf2f7;">
-                                    <td style="padding: 12px 8px;"><strong><%= pendingUser.getName() %></strong></td>
-                                    <td style="padding: 12px 8px;"><%= pendingUser.getEmail() %></td>
-                                    <td style="padding: 12px 8px;"><%= pendingUser.getPhone() != null ? pendingUser.getPhone() : "-" %></td>
-                                    <td style="padding: 12px 8px;">
-                                        
-                                        <div class="table-btn-flexbox" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                                            
-                                            <form action="${pageContext.request.contextPath}/admin/manage-users" method="POST" style="margin: 0;">
-                                                <input type="hidden" name="userId" value="<%= pendingUser.getUserId() %>">
-                                                <input type="hidden" name="action" value="approve">
-                                                <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; cursor: pointer; width: auto;">Approve</button>
-                                            </form>
-
-                                            <form action="${pageContext.request.contextPath}/admin/manage-users" method="POST" style="margin: 0;">
-                                                <input type="hidden" name="userId" value="<%= pendingUser.getUserId() %>">
-                                                <input type="hidden" name="action" value="reject">
-                                                <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; cursor: pointer; width: auto; background-color: #e53e3e; border-color: #e53e3e;">Reject</button>
-                                            </form>
-                                            
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Success and error alerts from session -->
+            <% if (successMsg != null) { %>
+                <div class="alert-success"><%= successMsg %></div>
             <% } %>
-        </div>
+            <% if (errorMsg != null) { %>
+                <div class="alert-danger"><%= errorMsg %></div>
+            <% } %>
 
-        <div class="auth-footer" style="margin-top: 30px; border-top: 1px solid #edf2f7; padding-top: 20px;">
-            <p><a href="${pageContext.request.contextPath}/AdminServlet?action=dashboard" style="text-decoration: none; font-weight: 600; color: #3182ce;">Return to Core Admin Dashboard</a></p>
-        </div>
+            <!-- Pending user registrations table -->
+            <section class="management-section">
+                <div class="section-header">
+                    <h2>Pending Registrations</h2>
+                </div>
+
+                <% if (pendingUsers == null || pendingUsers.isEmpty()) { %>
+                    <p class="no-data">No user registrations are currently pending approval.</p>
+                <% } else { %>
+                    <div class="table-scroll-container">
+                        <table class="responsive-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (User pendingUser : pendingUsers) { %>
+                                    <tr>
+                                        <td><strong><%= pendingUser.getName() %></strong></td>
+                                        <td><%= pendingUser.getEmail() %></td>
+                                        <td><%= pendingUser.getPhone() != null ? pendingUser.getPhone() : "-" %></td>
+                                        <td>
+                                            <div class="table-btn-flexbox">
+
+                                                <!-- Approve user registration -->
+                                                <form action="${pageContext.request.contextPath}/admin/manage-users" method="POST" style="margin:0;">
+                                                    <input type="hidden" name="userId" value="<%= pendingUser.getUserId() %>">
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <button type="submit" class="btn-success btn-small">Approve</button>
+                                                </form>
+
+                                                <!-- Reject user registration -->
+                                                <form action="${pageContext.request.contextPath}/admin/manage-users" method="POST" style="margin:0;"
+                                                      onsubmit="return confirm('Are you sure you want to reject this user?');">
+                                                    <input type="hidden" name="userId" value="<%= pendingUser.getUserId() %>">
+                                                    <input type="hidden" name="action" value="reject">
+                                                    <button type="submit" class="btn-danger btn-small">Reject</button>
+                                                </form>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </section>
+
+        </main>
     </div>
-
 </body>
 </html>

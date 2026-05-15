@@ -1,4 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="com.park.ease.model.User" %>
+<%
+    /* Retrieve user session to determine redirect destination */
+    User user = (User) session.getAttribute("user");
+    String redirectUrl = request.getContextPath() + "/LoginServlet";
+    if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
+        redirectUrl = request.getContextPath() + "/AdminServlet?action=dashboard";
+    } else if (user != null) {
+        redirectUrl = request.getContextPath() + "/UserServlet?action=dashboard";
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,29 +18,29 @@
     <title>ParkEase | Access Denied</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
-<body class="auth-page">
+<body>
+    <div class="error-page">
+        <div class="error-card">
 
-    <!-- Fluid flex container handles center alignment on mobile devices -->
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1>Access Denied</h1>
-            <p>You are not authorized to access this page.</p>
+            <div class="error-icon">&#9888;</div>
 
-            <!-- Native validation alert status box -->
-            <div class="alert alert-danger">
-                Unauthorized access. Please login with the correct account or return to the home page.
+            <h1 class="error-code">403</h1>
+            <h2 class="error-title">Access Denied</h2>
+            <p class="error-message">
+                You do not have permission to access this page.
+                Please contact the administrator if you believe this is an error.
+            </p>
+
+            <div class="error-actions">
+                <a href="<%= redirectUrl %>" class="btn-primary">Go to Dashboard</a>
+                <a href="${pageContext.request.contextPath}/index.jsp" class="btn-outline-primary">Back to Home</a>
             </div>
 
-            <!-- Removed redundant inline style attributes to utilize your pure CSS button profile -->
-            <a href="${pageContext.request.contextPath}/index.jsp" class="btn-primary">
-                Go Back Home
-            </a>
-
-            <div class="auth-footer">
-                <p>Want to login with another account? <a href="${pageContext.request.contextPath}/LoginServlet">Login here</a></p>
+            <div class="error-footer-text">
+                ParkEase Parking Management System
             </div>
+
         </div>
     </div>
-
 </body>
 </html>
