@@ -13,38 +13,42 @@
         <h1>ParkEase</h1>
         <p>Welcome back! Please login to your account.</p>
 
-        <!-- ERROR ALERT -->
-        <% if(request.getAttribute("error") != null) { %>
+        <!-- Error message displayed when login credentials are invalid -->
+        <% if (request.getAttribute("error") != null) { %>
             <div class="alert-danger">
                 <%= request.getAttribute("error") %>
             </div>
         <% } %>
 
-        <!-- SUCCESS ALERT -->
-        <% if(request.getAttribute("success") != null) { %>
+        <!-- Success message displayed after successful registration -->
+        <% if (request.getAttribute("success") != null) { %>
             <div class="alert-success">
                 <%= request.getAttribute("success") %>
             </div>
         <% } %>
 
-        <!-- LOGIN FORM -->
-        <form action="${pageContext.request.contextPath}/LoginServlet" method="POST" class="profile-form">
+        <!-- Login form - submits credentials to LoginServlet for authentication -->
+        <form action="${pageContext.request.contextPath}/LoginServlet" method="POST">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" class="form-input" required placeholder="Enter your email">
+                <input type="email" id="email" name="email" class="form-input"
+                       required placeholder="Enter your email">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-input" required placeholder="Enter your password">
+                <input type="password" id="password" name="password" class="form-input"
+                       required placeholder="Enter your password">
             </div>
 
             <button type="submit" class="btn-primary">Login</button>
         </form>
 
-        <!-- REGISTER LINK -->
+        <!-- Link to registration page for new users -->
         <div class="auth-footer">
-            <p>Don't have an account? <a href="${pageContext.request.contextPath}/UserServlet?action=register">Register here</a></p>
+            <p>Don't have an account?
+                <a href="${pageContext.request.contextPath}/UserServlet?action=register">Register here</a>
+            </p>
         </div>
     </div>
 

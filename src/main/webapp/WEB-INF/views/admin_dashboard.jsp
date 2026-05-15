@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.park.ease.model.*, java.util.List, java.util.Map" %>
 <%
+    /* Security check: Restrict access to admin users only */
     User user = (User) session.getAttribute("user");
     if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
@@ -8,9 +9,14 @@
     }
 
     String action = request.getParameter("action");
-    String msg = request.getParameter("msg");
-    String error = request.getParameter("error");
 
+    /* Read session messages and clear them after display */
+    String successMsg = (String) session.getAttribute("successMsg");
+    String errorMsg = (String) session.getAttribute("errorMsg");
+    if (successMsg != null) session.removeAttribute("successMsg");
+    if (errorMsg != null) session.removeAttribute("errorMsg");
+
+    /* Load dashboard data from request attributes */
     Map<String, Integer> stats = (Map<String, Integer>) request.getAttribute("dashboardStats");
     double revenue = (request.getAttribute("totalRevenue") != null)
             ? (Double) request.getAttribute("totalRevenue") : 0.0;
@@ -32,7 +38,8 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
-        <!-- SIDEBAR -->
+
+        <!-- SIDEBAR NAVIGATION -->
         <aside class="sidebar admin-sidebar">
             <div class="sidebar-header">
                 <h2>Admin Portal</h2>
@@ -47,31 +54,30 @@
             </nav>
         </aside>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN CONTENT AREA -->
         <main class="main-content">
             <header class="content-header">
                 <h1>System Overview</h1>
                 <div class="user-badge admin-tag">Master Admin</div>
             </header>
 
-            <!-- SUCCESS/ERROR ALERTS -->
-            <% if (msg != null) { %>
-                <div class="alert-success">Action completed successfully.</div>
+            <!-- SUCCESS AND ERROR ALERTS FROM SESSION -->
+            <% if (successMsg != null) { %>
+                <div class="alert-success"><%= successMsg %></div>
+            <% } %>
+            <% if (errorMsg != null) { %>
+                <div class="alert-danger"><%= errorMsg %></div>
             <% } %>
 
-            <% if (error != null) { %>
-                <div class="alert-danger">Error: <%= error.replaceAll("<", "&lt;") %></div>
-            <% } %>
-
-            <!-- STATS GRID -->
+            <!-- DASHBOARD STATISTICS CARDS -->
             <section class="stats-grid">
-                <div class="stat-card">
-                    <h3>Total Users</h3>
-                    <p class="stat-number"><%= stats != null ? stats.getOrDefault("totalUsers", 0) : 0 %></p>
-                </div>
                 <div class="stat-card">
                     <h3>Pending Approvals</h3>
                     <p class="stat-number"><%= stats != null ? stats.getOrDefault("pendingApprovals", 0) : 0 %></p>
+                </div>
+                <div class="stat-card">
+                    <h3>Available Slots</h3>
+                    <p class="stat-number"><%= stats != null ? stats.getOrDefault("availableSlots", 0) : 0 %></p>
                 </div>
                 <div class="stat-card">
                     <h3>Occupied Slots</h3>
@@ -79,7 +85,7 @@
                 </div>
                 <div class="stat-card">
                     <h3>Total Revenue</h3>
-                    <p class="stat-number">₹<%= String.format("%.2f", revenue) %></p>
+                    <p class="stat-number">Rs. <%= String.format("%.2f", revenue) %></p>
                 </div>
             </section>
 
@@ -88,14 +94,15 @@
                 <section class="management-section">
                     <div class="section-header">
                         <h2>Zone Management</h2>
-                        <a href="${pageContext.request.contextPath}/ZoneServlet?action=create" class="btn-primary">Add Zone</a>
+                        <a href="${pageContext.request.contextPath}/ZoneServlet?action=add" class="btn-primary" style="width:auto; padding: 0.6rem 1.5rem;">Add Zone</a>
                     </div>
 
-                    <!-- ZONE FORM -->
-                    <% if (selectedZone != null) { %>
-                        <div class="stat-card">
+                    <!-- ZONE ADD/EDIT FORM -->
+                    <% if (selectedZone != null || "add".equals(action)) { %>
+                        <div class="stat-card" style="margin-bottom: 1.5rem;">
                             <h3><%= selectedZone != null ? "Edit Zone" : "Create New Zone" %></h3>
-                            <form action="${pageContext.request.contextPath}/ZoneServlet?action=<%= selectedZone != null ? "update" : "create" %>" method="POST" class="profile-form">
+                            <form action="${pageContext.request.contextPath}/ZoneServlet" method="POST" class="profile-form">
+                                <input type="hidden" name="action" value="<%= selectedZone != null ? "update" : "create" %>">
                                 <% if (selectedZone != null) { %>
                                     <input type="hidden" name="zoneId" value="<%= selectedZone.getZoneId() %>">
                                 <% } %>
@@ -117,17 +124,17 @@
                                     <textarea name="description" class="form-input"><%= selectedZone != null && selectedZone.getDescription() != null ? selectedZone.getDescription() : "" %></textarea>
                                 </div>
 
-                                <button type="submit" class="btn-primary">
+                                <button type="submit" class="btn-primary" style="width:auto; padding: 0.7rem 1.5rem;">
                                     <%= selectedZone != null ? "Update Zone" : "Save Zone" %>
                                 </button>
-                                <a href="${pageContext.request.contextPath}/ZoneServlet?action=list" class="btn-secondary">Cancel</a>
+                                <a href="${pageContext.request.contextPath}/ZoneServlet?action=list" class="btn-secondary" style="padding: 0.7rem 1.5rem;">Cancel</a>
                             </form>
                         </div>
                     <% } %>
 
-                    <!-- ZONE TABLE -->
+                    <!-- ZONE LIST TABLE -->
                     <div class="table-scroll-container">
-                        <table class="data-table">
+                        <table class="responsive-data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -145,16 +152,16 @@
                                         <td><strong><%= z.getZoneName() %></strong></td>
                                         <td><%= z.getCapacity() %> Slots</td>
                                         <td><%= z.getDescription() != null ? z.getDescription() : "-" %></td>
-                                        <td class="table-btn-flexbox">
-                                            <a href="${pageContext.request.contextPath}/ZoneServlet?action=edit&zoneId=<%= z.getZoneId() %>" class="btn-primary">Edit</a>
-                                            <a href="${pageContext.request.contextPath}/ZoneServlet?action=delete&zoneId=<%= z.getZoneId() %>" class="btn-primary" onclick="return confirm('Delete this zone?');">Delete</a>
+                                        <td>
+                                            <div class="table-btn-flexbox">
+                                                <a href="${pageContext.request.contextPath}/ZoneServlet?action=edit&zoneId=<%= z.getZoneId() %>" class="btn-primary" style="width:auto; padding:6px 12px; font-size:13px;">Edit</a>
+                                                <a href="${pageContext.request.contextPath}/ZoneServlet?action=delete&zoneId=<%= z.getZoneId() %>" class="btn-danger" onclick="return confirm('Are you sure you want to delete this zone?');" style="padding:6px 12px; font-size:13px;">Delete</a>
+                                            </div>
                                         </td>
                                     </tr>
                                 <% }
                                 } else { %>
-                                    <tr>
-                                        <td colspan="5" class="no-data">No zones configured.</td>
-                                    </tr>
+                                    <tr><td colspan="5" class="no-data">No zones configured yet.</td></tr>
                                 <% } %>
                             </tbody>
                         </table>
@@ -167,14 +174,15 @@
                 <section class="management-section">
                     <div class="section-header">
                         <h2>Parking Slot Management</h2>
-                        <a href="${pageContext.request.contextPath}/SlotServlet?action=create" class="btn-primary">Add Slot</a>
+                        <a href="${pageContext.request.contextPath}/SlotServlet?action=add" class="btn-primary" style="width:auto; padding: 0.6rem 1.5rem;">Add Slot</a>
                     </div>
 
-                    <!-- SLOT FORM -->
-                    <% if (selectedSlot != null) { %>
-                        <div class="stat-card">
+                    <!-- SLOT ADD/EDIT FORM -->
+                    <% if (selectedSlot != null || "add".equals(action)) { %>
+                        <div class="stat-card" style="margin-bottom: 1.5rem;">
                             <h3><%= selectedSlot != null ? "Edit Parking Slot" : "Create New Parking Slot" %></h3>
-                            <form action="${pageContext.request.contextPath}/SlotServlet?action=<%= selectedSlot != null ? "updateSlot" : "addSlot" %>" method="POST" class="profile-form">
+                            <form action="${pageContext.request.contextPath}/SlotServlet" method="POST" class="profile-form">
+                                <input type="hidden" name="action" value="<%= selectedSlot != null ? "updateSlot" : "addSlot" %>">
                                 <% if (selectedSlot != null) { %>
                                     <input type="hidden" name="slotId" value="<%= selectedSlot.getSlotId() %>">
                                 <% } %>
@@ -189,8 +197,7 @@
                                                 <%= selectedSlot != null && selectedSlot.getZoneId() == z.getZoneId() ? "selected" : "" %>>
                                                 <%= z.getZoneName() %>
                                             </option>
-                                        <% }
-                                        } %>
+                                        <% }} %>
                                     </select>
                                 </div>
 
@@ -210,8 +217,8 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Hourly Rate (₹)</label>
-                                    <input type="number" name="hourlyRate" class="form-input" step="0.01" required
+                                    <label>Hourly Rate (Rs.)</label>
+                                    <input type="number" name="hourlyRate" class="form-input" step="0.01" required min="0"
                                            value="<%= selectedSlot != null ? selectedSlot.getHourlyRate() : "" %>">
                                 </div>
 
@@ -221,21 +228,20 @@
                                         <option value="available" <%= selectedSlot == null || "available".equalsIgnoreCase(selectedSlot.getStatus()) ? "selected" : "" %>>Available</option>
                                         <option value="occupied" <%= selectedSlot != null && "occupied".equalsIgnoreCase(selectedSlot.getStatus()) ? "selected" : "" %>>Occupied</option>
                                         <option value="maintenance" <%= selectedSlot != null && "maintenance".equalsIgnoreCase(selectedSlot.getStatus()) ? "selected" : "" %>>Maintenance</option>
-                                        <option value="reserved" <%= selectedSlot != null && "reserved".equalsIgnoreCase(selectedSlot.getStatus()) ? "selected" : "" %>>Reserved</option>
                                     </select>
                                 </div>
 
-                                <button type="submit" class="btn-primary">
+                                <button type="submit" class="btn-primary" style="width:auto; padding: 0.7rem 1.5rem;">
                                     <%= selectedSlot != null ? "Update Slot" : "Save Slot" %>
                                 </button>
-                                <a href="${pageContext.request.contextPath}/SlotServlet?action=list" class="btn-secondary">Cancel</a>
+                                <a href="${pageContext.request.contextPath}/SlotServlet?action=list" class="btn-secondary" style="padding: 0.7rem 1.5rem;">Cancel</a>
                             </form>
                         </div>
                     <% } %>
 
-                    <!-- SLOT TABLE -->
+                    <!-- SLOT LIST TABLE -->
                     <div class="table-scroll-container">
-                        <table class="data-table">
+                        <table class="responsive-data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -255,18 +261,18 @@
                                         <td><strong><%= s.getSlotNumber() %></strong></td>
                                         <td>Zone <%= s.getZoneId() %></td>
                                         <td><%= s.getVehicleType() %></td>
-                                        <td>₹<%= String.format("%.2f", s.getHourlyRate()) %></td>
+                                        <td>Rs. <%= String.format("%.2f", s.getHourlyRate()) %></td>
                                         <td><span class="status-badge <%= s.getStatus().toLowerCase() %>"><%= s.getStatus() %></span></td>
-                                        <td class="table-btn-flexbox">
-                                            <a href="${pageContext.request.contextPath}/SlotServlet?action=edit&slotId=<%= s.getSlotId() %>" class="btn-primary">Edit</a>
-                                            <a href="${pageContext.request.contextPath}/SlotServlet?action=delete&slotId=<%= s.getSlotId() %>" class="btn-primary" onclick="return confirm('Delete this slot?');">Delete</a>
+                                        <td>
+                                            <div class="table-btn-flexbox">
+                                                <a href="${pageContext.request.contextPath}/SlotServlet?action=edit&slotId=<%= s.getSlotId() %>" class="btn-primary" style="width:auto; padding:6px 12px; font-size:13px;">Edit</a>
+                                                <a href="${pageContext.request.contextPath}/SlotServlet?action=delete&slotId=<%= s.getSlotId() %>" class="btn-danger" onclick="return confirm('Are you sure you want to delete this slot?');" style="padding:6px 12px; font-size:13px;">Delete</a>
+                                            </div>
                                         </td>
                                     </tr>
                                 <% }
                                 } else { %>
-                                    <tr>
-                                        <td colspan="7" class="no-data">No slots found.</td>
-                                    </tr>
+                                    <tr><td colspan="7" class="no-data">No parking slots found.</td></tr>
                                 <% } %>
                             </tbody>
                         </table>
@@ -275,17 +281,18 @@
             <% } %>
 
             <!-- USER SUPPORT INQUIRIES SECTION -->
+            <% if (inquiries != null) { %>
             <section class="management-section">
                 <h2>User Support Inquiries</h2>
-                <% if (inquiries == null || inquiries.isEmpty()) { %>
-                    <div class="no-data">No active customer support messages found.</div>
+                <% if (inquiries.isEmpty()) { %>
+                    <p class="no-data">No support inquiries submitted yet.</p>
                 <% } else { %>
                     <div class="table-scroll-container">
-                        <table class="data-table">
+                        <table class="responsive-data-table">
                             <thead>
                                 <tr>
                                     <th>Submitted</th>
-                                    <th>User Name</th>
+                                    <th>Name</th>
                                     <th>Email</th>
                                     <th>Message</th>
                                 </tr>
@@ -304,6 +311,8 @@
                     </div>
                 <% } %>
             </section>
+            <% } %>
+
         </main>
     </div>
 </body>
