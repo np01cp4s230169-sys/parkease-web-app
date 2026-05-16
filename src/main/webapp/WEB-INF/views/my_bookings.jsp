@@ -152,7 +152,7 @@
                                     <td><span class="status-badge available">COMPLETED</span></td>
                                     <td>
                                         <!-- View receipt link for completed sessions -->
-                                        <a href="${pageContext.request.contextPath}/AdminServlet?action=downloadReceipt&sessionId=<%= s.getSessionId() %>"
+                                        <a href="${pageContext.request.contextPath}/BookingServlet?action=viewReceipt&sessionId=<%= s.getSessionId() %>"
                                            class="btn-primary" style="width:auto; padding:6px 12px; font-size:13px;">
                                             View Receipt
                                         </a>
