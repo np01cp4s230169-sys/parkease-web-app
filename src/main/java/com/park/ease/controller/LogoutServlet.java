@@ -42,7 +42,7 @@ public class LogoutServlet extends HttpServlet {
                     if (REMEMBER_ME_COOKIE.equals(cookie.getName())) {
                         Cookie deleteCookie = new Cookie(REMEMBER_ME_COOKIE, "");
                         deleteCookie.setMaxAge(0); // age 0 instructs browser to delete
-                        deleteCookie.setPath(request.getContextPath() + "/");
+                        deleteCookie.setPath("/");
                         response.addCookie(deleteCookie);
                         break;
                     }
