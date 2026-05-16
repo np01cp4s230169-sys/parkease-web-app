@@ -62,6 +62,15 @@ public class SlotServlet extends HttpServlet {
                 request.setAttribute("zoneList", zoneList);
                 request.getRequestDispatcher("/WEB-INF/views/admin_dashboard.jsp").forward(request, response);
             }
+            else if ("add".equals(action)) {
+                // Admin: Show the add slot form with zone list populated
+                List<ParkingSlot> slotList = slotService.getAllSlots();
+                List<Zone> zoneList = zoneService.getAllZones();
+
+                request.setAttribute("slotList", slotList);
+                request.setAttribute("zoneList", zoneList);
+                request.getRequestDispatcher("/WEB-INF/views/admin_dashboard.jsp").forward(request, response);
+            }
             else if ("edit".equals(action)) {
                 handleEditSlot(request, response);
             }
@@ -189,6 +198,7 @@ public class SlotServlet extends HttpServlet {
 
         String slotIdParam = request.getParameter("slotId");
 
+        // Validate slotId is provided
         if (slotIdParam == null || slotIdParam.trim().isEmpty()) {
             request.getSession().setAttribute("errorMsg", "Slot ID is required for editing.");
             response.sendRedirect(request.getContextPath() + "/SlotServlet?action=list");
@@ -289,6 +299,7 @@ public class SlotServlet extends HttpServlet {
         HttpSession session = request.getSession();
         String slotIdParam = request.getParameter("slotId");
 
+        // Validate slotId is provided
         if (slotIdParam == null || slotIdParam.trim().isEmpty()) {
             session.setAttribute("errorMsg", "Slot ID is required for deletion.");
             response.sendRedirect(request.getContextPath() + "/SlotServlet?action=list");
