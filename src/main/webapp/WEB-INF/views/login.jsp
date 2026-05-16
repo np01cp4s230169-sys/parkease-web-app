@@ -72,16 +72,16 @@
                        required placeholder="Enter your password">
             </div>
 
-            <!-- Remember Me checkbox - stores email in cookie for 7 days -->
+            <!-- Remember Me checkbox — auto-checked if cookie exists -->
             <div class="remember-me">
                 <input type="checkbox" id="rememberMe" name="rememberMe"
-                       <%= hasRememberedEmail ? "checked" : "" %>>
+                       <% if (hasRememberedEmail) { %> checked <% } %>>
                 <label for="rememberMe">Remember me for 7 days</label>
             </div>
 
             <button type="submit" class="btn-primary">Login</button>
 
-            <!-- Cookie notice for transparency -->
+            <!-- Cookie notice shown when email is pre-filled -->
             <% if (hasRememberedEmail) { %>
                 <p class="cookie-notice">
                     Your email is saved by a cookie.

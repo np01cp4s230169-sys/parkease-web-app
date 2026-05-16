@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,21 +34,10 @@ public class LogoutServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            /* Delete the Remember Me cookie if it exists in the browser */
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (REMEMBER_ME_COOKIE.equals(cookie.getName())) {
-                        Cookie deleteCookie = new Cookie(REMEMBER_ME_COOKIE, "");
-                        deleteCookie.setMaxAge(0); // age 0 instructs browser to delete
-                        deleteCookie.setPath("/");
-                        response.addCookie(deleteCookie);
-                        break;
-                    }
-                }
-            }
-
-            /* Invalidate session to clear all user data and attributes */
+            /* Invalidate session to clear all user data and attributes.
+             * Note: The Remember Me cookie is intentionally NOT deleted on logout
+             * so the user's email is pre-filled on their next visit.
+             * The cookie is only removed when the user unchecks Remember Me and logs in. */
             HttpSession session = request.getSession(false);
             if (session != null) {
                 session.invalidate();
