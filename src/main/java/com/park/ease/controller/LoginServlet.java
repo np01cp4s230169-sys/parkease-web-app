@@ -112,14 +112,14 @@ public class LoginServlet extends HttpServlet {
                         /* Store email in browser cookie for 7 days */
                         Cookie emailCookie = new Cookie(REMEMBER_ME_COOKIE, user.getEmail());
                         emailCookie.setMaxAge(COOKIE_MAX_AGE);
-                        emailCookie.setPath(request.getContextPath() + "/");
+                        emailCookie.setPath("/");
                         emailCookie.setHttpOnly(true); // block JavaScript access for security
                         response.addCookie(emailCookie);
                     } else {
                         /* Remember Me not selected — delete existing cookie if present */
                         Cookie deleteCookie = new Cookie(REMEMBER_ME_COOKIE, "");
                         deleteCookie.setMaxAge(0); // age 0 instructs browser to delete
-                        deleteCookie.setPath(request.getContextPath() + "/");
+                        deleteCookie.setPath("/");
                         response.addCookie(deleteCookie);
                     }
 
