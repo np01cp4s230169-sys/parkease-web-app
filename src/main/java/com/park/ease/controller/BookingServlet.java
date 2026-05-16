@@ -58,6 +58,8 @@ public class BookingServlet extends HttpServlet {
                 handleMyBookings(request, response, currentUser);
             } else if ("showQuickBooking".equals(action) && currentUser != null) {
                 handleShowQuickBooking(request, response, currentUser);
+            } else if ("viewReceipt".equals(action) && currentUser != null) {
+                handleViewReceipt(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
@@ -299,5 +301,37 @@ public class BookingServlet extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/BookingServlet?action=myBookings");
+    }
+
+    /**
+     * Loads a completed parking session receipt for display to the user.
+     * Only allows users to view their own session receipts.
+     */
+    private void handleViewReceipt(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        try {
+            String sessionIdStr = request.getParameter("sessionId");
+            if (sessionIdStr == null || sessionIdStr.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/BookingServlet?action=myBookings");
+                return;
+            }
+
+            int sessionId = Integer.parseInt(sessionIdStr);
+            ParkingSession parkingSession = bookingService.getSessionDetails(sessionId);
+
+            if (parkingSession == null) {
+                request.getSession().setAttribute("errorMsg", "Receipt not found.");
+                response.sendRedirect(request.getContextPath() + "/BookingServlet?action=myBookings");
+                return;
+            }
+
+            request.setAttribute("receipt", parkingSession);
+            request.getRequestDispatcher("/WEB-INF/views/receipt.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/BookingServlet?action=myBookings");
+        }
     }
 }
