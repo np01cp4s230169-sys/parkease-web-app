@@ -90,7 +90,7 @@
             </section>
 
             <!-- ZONE MANAGEMENT SECTION -->
-            <% if (("list".equals(action) || "edit".equals(action)) && zoneList != null && slotList == null) { %>
+            <% if (("list".equals(action) || "edit".equals(action) || "add".equals(action)) && zoneList != null && slotList == null) { %>
                 <section class="management-section">
                     <div class="section-header">
                         <h2>Zone Management</h2>
@@ -170,7 +170,7 @@
             <% } %>
 
             <!-- SLOT MANAGEMENT SECTION -->
-            <% if (("list".equals(action) || "edit".equals(action)) && slotList != null) { %>
+            <% if (("list".equals(action) || "edit".equals(action) || "add".equals(action)) && slotList != null) { %>
                 <section class="management-section">
                     <div class="section-header">
                         <h2>Parking Slot Management</h2>
