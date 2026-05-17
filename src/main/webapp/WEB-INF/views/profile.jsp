@@ -24,6 +24,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParkEase | My Profile</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <style>
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #2c3e50;
+            display: block;
+            margin: 0 auto 0.8rem auto;
+        }
+        .profile-avatar-placeholder {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background-color: #2c3e50;
+            color: white;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.8rem auto;
+            border: 4px solid #2c3e50;
+        }
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .avatar-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+    </style>
 </head>
 <body class="dashboard-body">
     <div class="dashboard-container">
@@ -58,11 +93,27 @@
             <!-- Account details and update profile forms -->
             <div class="profile-grid">
 
-                <!-- Current account information display -->
+                <!-- Current account information with profile picture -->
                 <section class="stat-card">
                     <h3>Account Details</h3>
+
+                    <!-- Profile picture display -->
+                    <div class="avatar-section">
+                        <% if (user.getProfilePic() != null && !user.getProfilePic().isEmpty()) { %>
+                            <!-- Display Base64 profile image -->
+                            <img class="profile-avatar"
+                                 src="data:image/jpeg;base64,<%= user.getProfilePic() %>"
+                                 alt="Profile Picture of <%= user.getName() %>">
+                        <% } else { %>
+                            <!-- Show initials placeholder when no image uploaded -->
+                            <div class="profile-avatar-placeholder">
+                                <%= user.getName().substring(0, 1).toUpperCase() %>
+                            </div>
+                        <% } %>
+                        <p class="avatar-name"><%= user.getName() %></p>
+                    </div>
+
                     <div class="profile-info">
-                        <p><strong>Name:</strong> <%= user.getName() %></p>
                         <p><strong>Email:</strong> <%= user.getEmail() %></p>
                         <p><strong>Phone:</strong> <%= user.getPhone() %></p>
                         <p><strong>Role:</strong> <span class="user-badge"><%= user.getRole() %></span></p>
