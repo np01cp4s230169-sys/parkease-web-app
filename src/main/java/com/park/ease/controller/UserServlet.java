@@ -1,8 +1,9 @@
 package com.park.ease.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
-
 import java.util.Map;
 
 import com.park.ease.model.User;
@@ -14,25 +15,32 @@ import com.park.ease.service.VehicleService;
 import com.park.ease.util.ValidationUtil;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 
 /**
  * UserServlet handles all user-related operations in the ParkEase system.
- * Manages user registration, profile management, vehicle registration,
- * password changes, and user dashboard access.
- * 
- * Includes duplicate account checks using email and phone number
- * to ensure unique user registration as per system requirements.
- * 
+ * Manages user registration (with optional profile image upload), profile
+ * management, vehicle registration, password changes, and dashboard access.
+ *
+ * The @MultipartConfig annotation enables file upload support for profile
+ * image upload during registration. Images are converted to Base64 strings
+ * and stored directly in the database, requiring no server-side file storage.
+ *
  * URL Pattern: /UserServlet
- * Actions (GET): register, dashboard, profile
+ * Actions (GET):  register, dashboard, profile
  * Actions (POST): doRegister, addVehicle, changePassword, updateProfile
  */
 @WebServlet("/UserServlet")
+@MultipartConfig(
+    maxFileSize    = 2 * 1024 * 1024,  // max single file size: 2 MB
+    maxRequestSize = 5 * 1024 * 1024   // max total request size: 5 MB
+)
 public class UserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -43,7 +51,7 @@ public class UserServlet extends HttpServlet {
     private BookingService bookingService = new BookingService();
 
     /**
-     * Handles GET requests - routes to registration, dashboard, or profile pages.
+     * Handles GET requests — routes to registration, dashboard, or profile pages.
      * Validates user session before accessing protected pages.
      */
     @Override
@@ -52,24 +60,18 @@ public class UserServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         HttpSession session = request.getSession(false);
-        User currentUser = null;
-
-        if (session != null) {
-            currentUser = (User) session.getAttribute("user");
-        }
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
 
         try {
-            if ("register".equals(action)) {
-                // Display the registration form - publicly accessible
+            if ("register".equals(action) || action == null) {
                 request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
-            }
-            else if ("dashboard".equals(action)) {
+
+            } else if ("dashboard".equals(action)) {
                 if (currentUser != null) {
                     // Load real dashboard statistics for the user
                     Map<String, Integer> slotStats = slotService.getDashboardStats();
                     int availableSlots = slotStats.getOrDefault("availableSlots", 0);
 
-                    // Count active bookings for this user across all their vehicles
                     List<Vehicle> userVehicles = vehicleService.getUserVehicles(currentUser.getUserId());
                     int activeBookings = 0;
                     double totalSpent = 0.0;
@@ -89,20 +91,20 @@ public class UserServlet extends HttpServlet {
                 } else {
                     response.sendRedirect(request.getContextPath() + "/LoginServlet");
                 }
-            }
-            else if ("profile".equals(action)) {
+
+            } else if ("profile".equals(action)) {
                 if (currentUser != null) {
-                    // Load user's registered vehicles for profile page display
                     List<Vehicle> vehicleList = vehicleService.getUserVehicles(currentUser.getUserId());
                     request.setAttribute("vehicleList", vehicleList);
                     request.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(request, response);
                 } else {
                     response.sendRedirect(request.getContextPath() + "/LoginServlet");
                 }
-            }
-            else {
+
+            } else {
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", "An unexpected error occurred.");
@@ -111,7 +113,7 @@ public class UserServlet extends HttpServlet {
     }
 
     /**
-     * Handles POST requests - routes to appropriate handler based on action.
+     * Handles POST requests — routes to the correct action handler.
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -119,25 +121,31 @@ public class UserServlet extends HttpServlet {
 
         String action = request.getParameter("action");
 
+        if (action == null || action.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
+
         try {
             if ("doRegister".equals(action)) {
                 handleRegistration(request, response);
-            }
-            else if ("addVehicle".equals(action)) {
+
+            } else if ("addVehicle".equals(action)) {
                 handleAddVehicle(request, response);
-            }
-            else if ("changePassword".equals(action)) {
+
+            } else if ("changePassword".equals(action)) {
                 handleChangePassword(request, response);
-            }
-            else if ("updateProfile".equals(action)) {
+
+            } else if ("updateProfile".equals(action)) {
                 handleUpdateProfile(request, response);
-            }
-            else {
+
+            } else {
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("errorMessage", "An error occurred while processing your request.");
+            request.setAttribute("errorMessage", "An unexpected error occurred.");
             request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
         }
     }
@@ -145,21 +153,21 @@ public class UserServlet extends HttpServlet {
     // ==================== REGISTRATION ====================
 
     /**
-     * Handles new user registration with full validation and duplicate checks.
-     * Validates name format (no numbers), email format, and uniqueness
-     * of both email and phone number before creating the account.
-     * New accounts are set to pending status awaiting admin approval.
+     * Handles new user registration.
+     * Validates all input fields, checks for duplicate email and phone,
+     * processes optional profile image upload by converting to Base64,
+     * and creates the account with pending status for admin approval.
      */
     private void handleRegistration(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String name = request.getParameter("name");
-        String email = request.getParameter("email");
-        String phone = request.getParameter("phone");
+        String name     = request.getParameter("name");
+        String email    = request.getParameter("email");
+        String phone    = request.getParameter("phone");
         String password = request.getParameter("password");
 
         // Trim inputs to handle accidental whitespace
-        if (name != null) name = name.trim();
+        if (name != null)  name  = name.trim();
         if (email != null) email = email.trim();
         if (phone != null) phone = phone.trim();
 
@@ -170,39 +178,61 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        // 2. Validate name contains only letters and spaces (no numbers allowed)
+        // 2. Name must contain letters and spaces only
         if (!name.matches("[a-zA-Z ]+")) {
             request.setAttribute("error", "Full name must contain letters only. Numbers are not allowed.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
             return;
         }
 
-        // 3. Validate email format is correct
+        // 3. Validate email format
         if (!ValidationUtil.isValidEmail(email)) {
             request.setAttribute("error", "Invalid email format. Please enter a valid email address.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
             return;
         }
 
-        // 4. Validate phone contains only digits and is proper length
+        // 4. Validate phone contains only digits and is correct length
         if (!phone.matches("\\d{10,15}")) {
             request.setAttribute("error", "Phone number must contain 10 to 15 digits only.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
             return;
         }
 
-        // 5. Duplicate check: Email must not already be registered
+        // 5. Check email is not already registered
         if (userService.isEmailExists(email)) {
             request.setAttribute("error", "This email address is already registered. Please use a different email.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
             return;
         }
 
-        // 6. Duplicate check: Phone number must not already be registered
+        // 6. Check phone is not already registered
         if (userService.isPhoneExists(phone)) {
             request.setAttribute("error", "This phone number is already registered. Please use a different number.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
             return;
+        }
+
+        // 7. Process optional profile image upload
+        String base64Image = null;
+        try {
+            Part profilePicPart = request.getPart("profilePic");
+            if (profilePicPart != null && profilePicPart.getSize() > 0) {
+                String contentType = profilePicPart.getContentType();
+                // Only accept image files
+                if (contentType != null && contentType.startsWith("image/")) {
+                    InputStream inputStream = profilePicPart.getInputStream();
+                    byte[] imageBytes = inputStream.readAllBytes();
+                    base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                } else {
+                    request.setAttribute("error", "Profile image must be a valid image file (jpg, png, gif).");
+                    request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            // If file part is missing or empty, continue without profile pic
+            e.printStackTrace();
         }
 
         // Build new user object with pending status for admin approval
@@ -212,13 +242,14 @@ public class UserServlet extends HttpServlet {
         newUser.setEmail(email);
         newUser.setRole("USER");
         newUser.setStatus("pending");
+        newUser.setProfilePic(base64Image); // null if no image uploaded
 
         // Register the user and redirect to login with success message
         if (userService.registerUser(newUser, password)) {
             request.setAttribute("success", "Registration successful! Your account is pending admin approval.");
             request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         } else {
-            request.setAttribute("error", "Registration failed. Please try again later.");
+            request.setAttribute("error", "Registration failed. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
         }
     }
@@ -227,47 +258,43 @@ public class UserServlet extends HttpServlet {
 
     /**
      * Handles adding a new vehicle to the user's account.
-     * Validates all required vehicle fields before saving.
+     * Validates registration number uniqueness before saving.
      */
     private void handleAddVehicle(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
 
-        // Redirect to login if session is not active
-        if (user == null) {
+        if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/LoginServlet");
             return;
         }
 
         String regNo = request.getParameter("regNo");
-        String type = request.getParameter("type");
-        String make = request.getParameter("make");
+        String type  = request.getParameter("type");
+        String make  = request.getParameter("make");
         String model = request.getParameter("model");
         String color = request.getParameter("color");
 
-        // Validate required vehicle fields
-        if (regNo == null || regNo.trim().isEmpty()
-                || type == null || type.trim().isEmpty()
-                || make == null || make.trim().isEmpty()
-                || model == null || model.trim().isEmpty()) {
-            session.setAttribute("errorMsg", "Registration number, type, make, and model are required.");
+        if (regNo != null) regNo = regNo.trim().toUpperCase();
+
+        if (regNo == null || regNo.isEmpty() || type == null || type.isEmpty()) {
+            session.setAttribute("errorMsg", "Registration number and vehicle type are required.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Build vehicle object with user association
-        Vehicle v = new Vehicle();
-        v.setUserId(user.getUserId());
-        v.setRegistrationNumber(regNo.trim());
-        v.setVehicleType(type.trim());
-        v.setMake(make.trim());
-        v.setModel(model.trim());
-        v.setColor(color != null ? color.trim() : "");
+        Vehicle vehicle = new Vehicle();
+        vehicle.setUserId(currentUser.getUserId());
+        vehicle.setRegistrationNumber(regNo);
+        vehicle.setVehicleType(type);
+        vehicle.setMake(make);
+        vehicle.setModel(model);
+        vehicle.setColor(color);
 
-        if (vehicleService.addVehicle(v)) {
-            session.setAttribute("successMsg", "Vehicle '" + regNo.trim() + "' added successfully.");
+        if (vehicleService.addVehicle(vehicle)) {
+            session.setAttribute("successMsg", "Vehicle '" + regNo + "' added successfully.");
         } else {
             session.setAttribute("errorMsg", "Failed to add vehicle. Registration number may already exist.");
         }
@@ -275,66 +302,54 @@ public class UserServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
     }
 
-    // ==================== PASSWORD MANAGEMENT ====================
+    // ==================== PASSWORD CHANGE ====================
 
     /**
-     * Handles user password change request.
-     * Validates current password, new password, and confirmation match
-     * before updating the password in the database.
+     * Handles password change for logged-in users.
+     * Verifies current password before applying the new one.
      */
     private void handleChangePassword(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
 
-        // Redirect to login if session is not active
-        if (user == null) {
+        if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/LoginServlet");
             return;
         }
 
-        String currentPassword = request.getParameter("currentPassword");
-        String newPassword = request.getParameter("newPassword");
-        String confirmPassword = request.getParameter("confirmPassword");
+        String currentPassword  = request.getParameter("currentPassword");
+        String newPassword      = request.getParameter("newPassword");
+        String confirmPassword  = request.getParameter("confirmPassword");
 
-        // Validate all password fields are provided
-        if (!ValidationUtil.isNotEmpty(currentPassword, newPassword, confirmPassword)) {
+        if (currentPassword == null || newPassword == null || confirmPassword == null
+                || currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             session.setAttribute("errorMsg", "All password fields are required.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Validate new password and confirmation match
         if (!newPassword.equals(confirmPassword)) {
             session.setAttribute("errorMsg", "New password and confirm password do not match.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Validate new password is different from current
-        if (newPassword.equals(currentPassword)) {
-            session.setAttribute("errorMsg", "New password must be different from your current password.");
-            response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
-            return;
-        }
-
-        if (userService.changePassword(user.getUserId(), currentPassword, newPassword)) {
+        if (userService.changePassword(currentUser.getUserId(), currentPassword, newPassword)) {
             session.setAttribute("successMsg", "Password changed successfully.");
         } else {
-            session.setAttribute("errorMsg", "Current password is incorrect. Please try again.");
+            session.setAttribute("errorMsg", "Current password is incorrect.");
         }
 
         response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
     }
 
-    // ==================== PROFILE MANAGEMENT ====================
+    // ==================== PROFILE UPDATE ====================
 
     /**
-     * Handles updating user profile information.
-     * Validates name, email format, and uniqueness of email and phone
-     * for other users before applying the update.
-     * Refreshes the session with updated user data after successful update.
+     * Handles profile information updates (name, email, phone).
+     * Checks for conflicts with other accounts before saving.
      */
     private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -342,70 +357,59 @@ public class UserServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
 
-        // Redirect to login if session is not active
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/LoginServlet");
             return;
         }
 
-        String name = request.getParameter("name");
+        String name  = request.getParameter("name");
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
 
-        // Trim inputs to handle accidental whitespace
-        if (name != null) name = name.trim();
+        if (name != null)  name  = name.trim();
         if (email != null) email = email.trim();
         if (phone != null) phone = phone.trim();
 
-        // Validate all required fields are provided
-        if (!ValidationUtil.isNotEmpty(name, email, phone)) {
+        if (name == null || email == null || phone == null
+                || name.isEmpty() || email.isEmpty() || phone.isEmpty()) {
             session.setAttribute("errorMsg", "Name, email, and phone are required.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Validate name contains only letters and spaces
         if (!name.matches("[a-zA-Z ]+")) {
-            session.setAttribute("errorMsg", "Full name must contain letters only. Numbers are not allowed.");
+            session.setAttribute("errorMsg", "Name must contain letters only.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Validate email format
         if (!ValidationUtil.isValidEmail(email)) {
-            session.setAttribute("errorMsg", "Invalid email format. Please enter a valid email address.");
+            session.setAttribute("errorMsg", "Invalid email format.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Check email is not already used by another account
         if (userService.isEmailExistsForOtherUser(email, currentUser.getUserId())) {
-            session.setAttribute("errorMsg", "This email address is already used by another account.");
+            session.setAttribute("errorMsg", "Email is already used by another account.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        // Check phone is not already used by another account
         if (userService.isPhoneExistsForOtherUser(phone, currentUser.getUserId())) {
-            session.setAttribute("errorMsg", "This phone number is already used by another account.");
+            session.setAttribute("errorMsg", "Phone number is already used by another account.");
             response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
             return;
         }
 
-        User updatedUser = new User();
-        updatedUser.setUserId(currentUser.getUserId());
-        updatedUser.setName(name);
-        updatedUser.setEmail(email);
-        updatedUser.setPhone(phone);
+        currentUser.setName(name);
+        currentUser.setEmail(email);
+        currentUser.setPhone(phone);
 
-        if (userService.updateProfile(updatedUser)) {
-            // Refresh session with updated user data
-            User freshUser = userService.getUserById(currentUser.getUserId());
-            session.setAttribute("user", freshUser);
-            session.setAttribute("role", freshUser.getRole());
+        if (userService.updateProfile(currentUser)) {
+            session.setAttribute("user", currentUser); // update session with new details
             session.setAttribute("successMsg", "Profile updated successfully.");
         } else {
-            session.setAttribute("errorMsg", "Failed to update profile. Please try again.");
+            session.setAttribute("errorMsg", "Profile update failed. Please try again.");
         }
 
         response.sendRedirect(request.getContextPath() + "/UserServlet?action=profile");
