@@ -5,12 +5,15 @@ import java.sql.Timestamp;
 /**
  * User model class representing a registered user in the ParkEase system.
  * Maps to the 'users' table in the database.
- * 
+ *
  * Roles: ADMIN (manages system), USER (books parking slots)
  * Status: pending (awaiting approval), approved (can login), rejected (denied)
- * 
+ *
  * Passwords are never stored in plain text - only the hash and salt
  * are stored, processed by EncryptionUtil.
+ *
+ * Profile images are stored as Base64-encoded strings in the database,
+ * eliminating the need for server-side file storage.
  */
 public class User {
 
@@ -22,6 +25,7 @@ public class User {
     private String salt;          // Random salt used during password hashing
     private String role;          // User role: ADMIN or USER
     private String status;        // Account status: pending, approved, or rejected
+    private String profilePic;    // Base64-encoded profile image string
     private Timestamp createdAt;  // Timestamp when account was created
     private Timestamp updatedAt;  // Timestamp when account was last updated
 
@@ -51,6 +55,9 @@ public class User {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getProfilePic() { return profilePic; }
+    public void setProfilePic(String profilePic) { this.profilePic = profilePic; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
