@@ -12,19 +12,20 @@ import com.park.ease.util.EncryptionUtil;
 /**
  * UserDAOImpl provides JDBC-based implementation of the UserDAO interface.
  * Handles all database operations for user records in the users table.
- * 
+ *
  * Uses PreparedStatements to prevent SQL injection attacks.
  * Passwords are verified using EncryptionUtil during login.
+ * Profile images are stored as Base64-encoded strings in the profile_pic column.
  */
 public class UserDAOImpl implements UserDAO {
 
     /**
      * Inserts a new user record into the users table.
-     * Stores hashed password and salt instead of plain text password.
+     * Stores hashed password, salt, and optional Base64 profile image.
      */
     @Override
     public boolean registerUser(User user) {
-        String sql = "INSERT INTO users (name, phone, email, password_hash, salt, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (name, phone, email, password_hash, salt, role, status, profile_pic) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = DBConnectionUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, user.getName());
@@ -34,6 +35,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(5, user.getSalt());
             ps.setString(6, user.getRole());
             ps.setString(7, user.getStatus());
+            ps.setString(8, user.getProfilePic()); // Base64 image or null if not uploaded
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -236,6 +238,24 @@ public class UserDAOImpl implements UserDAO {
     }
 
     /**
+     * Updates the Base64-encoded profile picture for a user account.
+     * Called when a user uploads a new profile image from their profile page.
+     */
+    @Override
+    public boolean updateProfilePic(int userId, String base64Image) {
+        String sql = "UPDATE users SET profile_pic = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
+        try (Connection con = DBConnectionUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, base64Image);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * Checks if an email is used by any user other than the specified user.
      * Used during profile updates to prevent email conflicts.
      */
@@ -282,6 +302,7 @@ public class UserDAOImpl implements UserDAO {
     /**
      * Maps a database ResultSet row to a User model object.
      * Reused across all methods that retrieve user records.
+     * Includes profile_pic column mapping for Base64 image data.
      */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User u = new User();
@@ -293,6 +314,7 @@ public class UserDAOImpl implements UserDAO {
         u.setSalt(rs.getString("salt"));
         u.setRole(rs.getString("role"));
         u.setStatus(rs.getString("status"));
+        u.setProfilePic(rs.getString("profile_pic")); // may be null for existing users
         u.setCreatedAt(rs.getTimestamp("created_at"));
         u.setUpdatedAt(rs.getTimestamp("updated_at"));
         return u;

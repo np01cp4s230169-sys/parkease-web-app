@@ -45,4 +45,7 @@ public interface UserDAO {
 
     /** Checks if a phone number is used by any user other than the specified user. */
     boolean isPhoneExistsForOtherUser(String phone, int userId);
+
+    /** Updates the Base64-encoded profile picture for a user account. */
+    boolean updateProfilePic(int userId, String base64Image);
 }
