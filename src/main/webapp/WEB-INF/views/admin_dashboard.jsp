@@ -177,7 +177,7 @@
                         <a href="${pageContext.request.contextPath}/SlotServlet?action=add" class="btn-primary" style="width:auto; padding: 0.6rem 1.5rem;">Add Slot</a>
                     </div>
 
-                    <!-- SLOT ADD/EDIT FORM -->
+                    <!-- Form for slot add and edit -->
                     <% if (selectedSlot != null || "add".equals(action)) { %>
                         <div class="stat-card" style="margin-bottom: 1.5rem;">
                             <h3><%= selectedSlot != null ? "Edit Parking Slot" : "Create New Parking Slot" %></h3>
