@@ -69,7 +69,7 @@
                 <div class="alert-danger"><%= errorMsg %></div>
             <% } %>
 
-            <!-- DASHBOARD STATISTICS CARDS -->
+            <!-- Dashboard statistics cards -->
             <section class="stats-grid">
                 <div class="stat-card">
                     <h3>Pending Approvals</h3>
