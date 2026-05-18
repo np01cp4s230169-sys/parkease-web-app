@@ -14,14 +14,14 @@
             <div class="error-icon">&#9888;</div>
 
             <%
-                /* Determine the HTTP error code */
+                /* Establish the error on HTTP code */
                 int statusCode = 500;
                 Object codeAttr = request.getAttribute("jakarta.servlet.error.status_code");
                 if (codeAttr != null) {
                     statusCode = (Integer) codeAttr;
                 }
 
-                /* Set appropriate title based on error code */
+                /* Shows the appropriate message based on error */
                 String title = "Something Went Wrong";
                 if (statusCode == 404) {
                     title = "Page Not Found";
