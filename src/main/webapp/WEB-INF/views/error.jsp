@@ -21,7 +21,7 @@
                     statusCode = (Integer) codeAttr;
                 }
 
-                /* Shows the appropriate message based on error */
+                /* Shows the appropriate title based on error */
                 String title = "Something Went Wrong";
                 if (statusCode == 404) {
                     title = "Page Not Found";
@@ -31,7 +31,7 @@
                     title = "Bad Request";
                 }
 
-                /* Check for custom error message from servlet or container */
+                /* Verify the custom error message from the servlet */
                 String errorMessage = (String) request.getAttribute("errorMessage");
                 if (errorMessage == null || errorMessage.isEmpty()) {
                     errorMessage = (String) request.getAttribute("jakarta.servlet.error.message");
