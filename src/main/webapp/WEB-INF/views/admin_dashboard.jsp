@@ -39,7 +39,7 @@
 <body class="dashboard-body">
     <div class="dashboard-container">
 
-        <!-- SIDEBAR NAVIGATION -->
+        <!-- Navigation for Sidebar -->
         <aside class="sidebar admin-sidebar">
             <div class="sidebar-header">
                 <h2>Admin Portal</h2>
@@ -54,7 +54,7 @@
             </nav>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
+        <!-- Main content -->
         <main class="main-content">
             <header class="content-header">
                 <h1>System Overview</h1>
