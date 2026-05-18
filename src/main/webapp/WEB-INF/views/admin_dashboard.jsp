@@ -10,13 +10,13 @@
 
     String action = request.getParameter("action");
 
-    /* Read session messages and clear them after display */
+    /* Reads the session messages and clears after display */
     String successMsg = (String) session.getAttribute("successMsg");
     String errorMsg = (String) session.getAttribute("errorMsg");
     if (successMsg != null) session.removeAttribute("successMsg");
     if (errorMsg != null) session.removeAttribute("errorMsg");
 
-    /* Load dashboard data from request attributes */
+    /* Loads the data from the request attribute */
     Map<String, Integer> stats = (Map<String, Integer>) request.getAttribute("dashboardStats");
     double revenue = (request.getAttribute("totalRevenue") != null)
             ? (Double) request.getAttribute("totalRevenue") : 0.0;
