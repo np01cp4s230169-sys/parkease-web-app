@@ -97,7 +97,7 @@
                         <a href="${pageContext.request.contextPath}/ZoneServlet?action=add" class="btn-primary" style="width:auto; padding: 0.6rem 1.5rem;">Add Zone</a>
                     </div>
 
-                    <!-- ZONE ADD/EDIT FORM -->
+                    <!-- Form for zone add and delete -->
                     <% if (selectedZone != null || "add".equals(action)) { %>
                         <div class="stat-card" style="margin-bottom: 1.5rem;">
                             <h3><%= selectedZone != null ? "Edit Zone" : "Create New Zone" %></h3>
