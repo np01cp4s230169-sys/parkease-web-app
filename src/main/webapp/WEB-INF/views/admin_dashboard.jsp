@@ -132,7 +132,7 @@
                         </div>
                     <% } %>
 
-                    <!-- ZONE LIST TABLE -->
+                    <!-- Table for zone list -->
                     <div class="table-scroll-container">
                         <table class="responsive-data-table">
                             <thead>
