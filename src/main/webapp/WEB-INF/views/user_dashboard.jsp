@@ -26,7 +26,7 @@
 
     <div class="dashboard-container">
 
-        <!-- Sidebar navigation for user portal -->
+        <!-- Navigation for user portal in sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>ParkEase</h2>
