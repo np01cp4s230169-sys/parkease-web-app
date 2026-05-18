@@ -61,7 +61,7 @@
                 <div class="user-badge admin-tag">Master Admin</div>
             </header>
 
-            <!-- SUCCESS AND ERROR ALERTS FROM SESSION -->
+            <!-- Message for success and error alerts from session -->
             <% if (successMsg != null) { %>
                 <div class="alert-success"><%= successMsg %></div>
             <% } %>
