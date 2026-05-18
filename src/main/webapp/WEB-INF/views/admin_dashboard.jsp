@@ -169,7 +169,7 @@
                 </section>
             <% } %>
 
-            <!-- SLOT MANAGEMENT SECTION -->
+            <!-- Section for slot management -->
             <% if (("list".equals(action) || "edit".equals(action) || "add".equals(action)) && slotList != null) { %>
                 <section class="management-section">
                     <div class="section-header">
