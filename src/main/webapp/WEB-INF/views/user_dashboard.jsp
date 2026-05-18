@@ -55,7 +55,7 @@
                 <div class="alert-danger"><%= errorMsg %></div>
             <% } %>
 
-            <!-- Dashboard summary cards -->
+            <!-- Cards for dashboard summary -->
             <section class="stats-grid">
                 <div class="stat-card">
                     <h3>Active Bookings</h3>
