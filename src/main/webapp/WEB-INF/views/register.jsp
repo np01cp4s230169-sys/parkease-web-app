@@ -54,7 +54,7 @@
         <h1>Create Account</h1>
         <p>Join ParkEase to manage your parking easily.</p>
 
-        <!-- Error message displayed when registration validation fails -->
+        <!-- Shows error message if registration fails -->
         <% if (request.getAttribute("error") != null) { %>
             <div class="alert-danger">
                 <%= request.getAttribute("error") %>
