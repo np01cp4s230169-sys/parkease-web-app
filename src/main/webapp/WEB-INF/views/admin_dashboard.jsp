@@ -239,7 +239,7 @@
                         </div>
                     <% } %>
 
-                    <!-- SLOT LIST TABLE -->
+                    <!-- Table for slot list -->
                     <div class="table-scroll-container">
                         <table class="responsive-data-table">
                             <thead>
