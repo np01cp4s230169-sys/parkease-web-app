@@ -8,7 +8,7 @@
         return;
     }
 
-    /* Read session messages and clear them after display */
+    /* Reads the messages from session and clear them after display */
     String successMsg = (String) session.getAttribute("successMsg");
     String errorMsg = (String) session.getAttribute("errorMsg");
     if (successMsg != null) session.removeAttribute("successMsg");
