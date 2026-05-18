@@ -89,7 +89,7 @@
                 </div>
             </section>
 
-            <!-- ZONE MANAGEMENT SECTION -->
+            <!-- Section for zone management -->
             <% if (("list".equals(action) || "edit".equals(action) || "add".equals(action)) && zoneList != null && slotList == null) { %>
                 <section class="management-section">
                     <div class="section-header">
