@@ -280,7 +280,7 @@
                 </section>
             <% } %>
 
-            <!-- USER SUPPORT INQUIRIES SECTION -->
+            <!-- Section for user support -->
             <% if (inquiries != null) { %>
             <section class="management-section">
                 <h2>User Support Inquiries</h2>
