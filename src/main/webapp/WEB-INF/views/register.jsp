@@ -70,7 +70,7 @@
               enctype="multipart/form-data">
             <input type="hidden" name="action" value="doRegister">
 
-            <!-- Profile picture upload section -->
+            <!-- Section for profile picture upload -->
             <div class="pic-upload-section">
                 <div class="profile-pic-placeholder" id="picPlaceholder">&#128100;</div>
                 <img id="picPreview" class="profile-pic-preview"
