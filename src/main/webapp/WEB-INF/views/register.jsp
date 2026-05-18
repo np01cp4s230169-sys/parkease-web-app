@@ -113,7 +113,7 @@
             <button type="submit" class="btn-primary">Register Now</button>
         </form>
 
-        <!-- Link to login page for existing users -->
+        <!-- Link for login page for already register user -->
         <div class="auth-footer">
             <p>Already have an account?
                 <a href="${pageContext.request.contextPath}/LoginServlet">Login here</a>
@@ -122,7 +122,7 @@
     </div>
 
     <script>
-        /* Preview selected image before upload */
+        /* Preview the selected picture before upload */
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
@@ -135,7 +135,7 @@
             }
         }
 
-        /* Click the label when placeholder is clicked */
+        /* Click on the label when the placeholder is clicked */
         document.getElementById('picPlaceholder').addEventListener('click', function() {
             document.getElementById('profilePic').click();
         });
