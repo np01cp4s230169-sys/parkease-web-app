@@ -71,7 +71,7 @@
                 </div>
             </section>
 
-            <!-- Quick action buttons for common user tasks -->
+            <!-- Action button for common user -->
             <section class="quick-actions">
                 <h2>Quick Actions</h2>
                 <div class="action-buttons">
