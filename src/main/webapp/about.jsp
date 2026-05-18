@@ -20,7 +20,7 @@
         </div>
     </nav>
 
-    <!-- About page content -->
+    <!-- Content for About Us -->
     <div class="profile-container">
 
         <div class="profile-header">
@@ -34,7 +34,7 @@
 
         <div class="profile-content-wrapper">
 
-            <!-- What we do section -->
+            <!-- Section for What we do -->
             <div class="profile-column">
                 <h2>What We Do</h2>
                 <p>
@@ -45,7 +45,7 @@
                 </p>
             </div>
 
-            <!-- Why choose us section -->
+            <!-- Section for Why choose us -->
             <div class="profile-column">
                 <h2>Why Choose ParkEase?</h2>
                 <p>Our system offers:</p>
@@ -60,7 +60,7 @@
 
         </div>
 
-        <!-- Contact information section -->
+        <!-- Section for Contact Us -->
         <div class="stat-card" style="margin-bottom: 2rem;">
             <h3>Get In Touch</h3>
             <div class="profile-info">
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <!-- Page footer -->
+        <!-- Footer Page -->
         <div class="footer">
             <p>&copy; 2026 ParkEase System. All Rights Reserved.</p>
         </div>
