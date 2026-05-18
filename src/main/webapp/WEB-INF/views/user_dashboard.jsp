@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.park.ease.model.User" %>
 <%
-    /* Security check: Redirect to login if user session is not active */
+    /* Check if the session is active if not then reirect to login */
     User user = (User) session.getAttribute("user");
     if (user == null) {
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
