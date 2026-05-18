@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.park.ease.model.*, java.util.List, java.util.Map" %>
 <%
-    /* Security check: Restrict access to admin users only */
+    /* Admin and Users are only allowed */
     User user = (User) session.getAttribute("user");
     if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/LoginServlet");
