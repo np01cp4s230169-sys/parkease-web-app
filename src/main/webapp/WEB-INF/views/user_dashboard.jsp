@@ -40,7 +40,7 @@
             </nav>
         </aside>
 
-        <!-- Main content area -->
+        <!-- Main area for content -->
         <main class="main-content">
             <header class="content-header">
                 <h1>Welcome, <%= user.getName() %>!</h1>
